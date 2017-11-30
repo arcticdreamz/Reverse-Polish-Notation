@@ -3,7 +3,9 @@
 #include <string>
 #include <vector>
 #include <ios>
-
+#include <iostream>
+#include <sstream>
+#include <fstream>
 
 
 
@@ -21,7 +23,7 @@ class Lexer {
 	std::istream in;
 	std::streamoff counter = 0;
 
-	token identifyToken(char* s);
+	token identifyToken(const char* s);
 };
 
 
