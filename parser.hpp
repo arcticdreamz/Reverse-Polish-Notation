@@ -1,5 +1,8 @@
 #ifndef _PARSER_H
 #define _PARSER_H 
+#include <string>
+#include <vector>
+#include <ios>
 
 
 
@@ -16,21 +19,22 @@ class Lexer {
 
 	private:	
 	std::istream in;
-	std::streamoff count = 0;
+	std::streamoff counter = 0;
 
-	token identifyToken(std::string s) {
-		if(s == 'x')
-			return token::X;
-		if(s == 'Y')
-			return token::Y;
-
-	}
+	token identifyToken(char* s);
 };
 
-explicit Parser(std::istream& in);
-bool parse(Exp& exp);
+
 
 typedef std::vector<std::string> Exp;
+
+
+class Parser {
+explicit Parser(std::istream& in);
+bool parse(Exp& exp);
+};
+
+
 
 
 

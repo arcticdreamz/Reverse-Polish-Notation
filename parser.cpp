@@ -3,26 +3,27 @@
 #include <string>
 #include <sstream>
 #include <fstream>
+#include <ios> //std::streamoff
+#include <stdexcept> //domain_error
+#include <cctype> //isspace
 
-using std::string
+using std::string;
 
 Lexer::Lexer(std::istream& inputStream){
 	in = inputStream;
 }
 
-token Lexer::next() {
-	const string sensitive_chars = "sincospiavg"
-	const string other_chars = "+/2,"
-	const string single_char = "xy()*"
+Lexer::token Lexer::next() {
+	const string sensitive_chars = "sincospiavg";
+	const string single_char = "xy()*";
 	if(in) {
 		char c;
 		string s;
 
 		c = in.get();
-		count++;
+		counter++;
 		while(isspace(c)) {
-			c = in.get(); count++; 
-
+			c = in.get(); counter++; 
 		}
 
 		if(single_char.find(c) != string::npos){
@@ -34,7 +35,7 @@ token Lexer::next() {
 
 
 			while(sensitive_chars.find(s) != string::npos) {
-				c = in.get(); count++;
+				c = in.get(); counter++;
 				s = s + c;
 			}
 
@@ -52,59 +53,50 @@ token Lexer::next() {
 	}
 }
 
-token Lexer::peek(){
+Lexer::token Lexer::peek(){
 
 
 }
 
 std::streamoff Lexer::count() const {
-	return this.count;
+	return this.counter;
 }
 
 void Lexer::reset(){
-	this.count = 0;
-
-
+	this.counter = 0;
 }
 
 
-	token identifyToken(std::string s) {
-		if(s == 'x')
-			return token::X;
+Lexer::token identifyToken(std::string s) {
+	if(s == "x")
+		return token::X;
 
-		if(s == 'Y')
-			return token::Y;
-		
-		if(s == "sin")
-			return token::SIN;
-		
-		if(s == "cos")
-			return token::COS;
-		
-		if(s == "pi")
-			return token::PI;
+	if(s == "Y")
+		return token::Y;
+	
+	if(s == "sin")
+		return token::SIN;
+	
+	if(s == "cos")
+		return token::COS;
+	
+	if(s == "pi")
+		return token::PI;
 
-		if(s == '(')
-			return token::OPEN_PAR;		
+	if(s == "(")
+		return token::OPEN_PAR;		
 
-		if(s == ')')
-			return token::CLOSE_PAR;
+	if(s == ")")
+		return token::CLOSE_PAR;
 
-		if(s == '*')
-			return token::TIMES;
+	if(s == "*")
+		return token::TIMES;
 
-		if(s == "avg")
-			return token::AVG;
+	if(s == "avg")
+		return token::AVG;
 
-		if(s == ',')
-			return token::COMMA;
+	if(s == ",")
+		return token::COMMA;
 }
 
-
-
-
-
-
-
-	}
 
