@@ -19,6 +19,10 @@ class Lexer {
 	std::streamoff count = 0;
 
 	token identifyToken(std::string s) {
+		if(s == 'x')
+			return token::X;
+		if(s == 'Y')
+			return token::Y;
 
 	}
 };
