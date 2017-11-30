@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 #include <ctime>
+#include "parser.hpp"
 
 
 using std::vector;
@@ -15,18 +16,22 @@ using std::cin;
 
 
 
-int main()
-{   vector<char> v;
-	std::string s;
-	getline(cin,s);
-	//copy(std::istream_iterator<char>(cin), std::istream_iterator(), back_inserter(v));
-	cout << s << endl;
+int main (){
+  std::string input = "(sin ( pi*avg(x , y)) * x)";
+  std::istringstream is(input);
+  std::cout<<"STR ="<<input<<'\n';
 
-    return 0;
+  Parser parser(is);
+  Exp exp;
+  if(parser.parse(exp)==1)
+    std::cout<<"Parse OK"<<'\n';
+  else std::cout<<"Parse NOT OK"<<'\n';
+  std::cout<<"exp =";
+  for(Exp::iterator it= exp.begin(); it != exp.end();++it)
+    std::cout<<" "<<*it;
+
+  return 0;
 }
-
-
-
 
 
 

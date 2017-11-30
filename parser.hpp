@@ -12,6 +12,15 @@ class Lexer {
 	token peek();
 	std::streamoff count() const;
 	void reset();
+
+
+	private:	
+	std::istream in;
+	std::streamoff count = 0;
+
+	token identifyToken(std::string s) {
+
+	}
 };
 
 explicit Parser(std::istream& in);
