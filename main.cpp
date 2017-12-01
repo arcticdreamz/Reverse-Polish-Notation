@@ -13,11 +13,21 @@ using std::cin;
 
 
 int main (){
-  std::string input = "(sin ( pi*avg(x , y)) * x)";
+  std::string input = "(sin( pi*avg(x , y)) * x)";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
 
   Lexer lexer(is);
+  Lexer::token tok = lexer.next();
+
+
+  std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
+  while(true){  
+
+  	std::cout << tokenToText[tok] << endl;
+  	tok = lexer.next();
+  }
+
  //Parser parser(is);
  /* Exp exp;
   if(parser.parse(exp)==1)

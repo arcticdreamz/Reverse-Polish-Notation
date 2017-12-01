@@ -20,10 +20,11 @@ class Lexer {
 
 
 	private:	
-	std::istream in;
+	std::istream& in;
 	std::streamoff counter = 0;
 
-	token identifyToken(const char* s);
+	token identifyToken(const std::string s);
+	std::string extractString();
 };
 
 
