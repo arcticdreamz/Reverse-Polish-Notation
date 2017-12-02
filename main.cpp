@@ -22,10 +22,13 @@ int main (){
 
 
   std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
-  while(true){  
-
-  	std::cout << tokenToText[tok] << endl;
+  while(lexer.count() < input.size()){ 
+	tok = lexer.peek(); 
+  	std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
+	tok = lexer.peek(); 
+  	std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
   	tok = lexer.next();
+  	std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
   }
 
  //Parser parser(is);

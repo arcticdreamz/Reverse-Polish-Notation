@@ -8,13 +8,14 @@
 #include <fstream>
 
 using std::string;
+using std::endl;
+using std::cout;
 
 Lexer::Lexer(std::istream& inputStream) : in(inputStream){
 }
 
 Lexer::token Lexer::next() {
 	if(in) {
-
 		in.seekg(count()); //Go to the current position
 		string s = extractString();
 		while(count() < in.tellg())
@@ -79,16 +80,16 @@ Lexer::token Lexer::identifyToken(const string s) {
 
 std::string Lexer::extractString(){
 	const string sensitive_chars = "sincospiavg";
-	const string single_char = "xy()*";
-
-	in.seekg(count());
+	const string single_char = "xy()*,";
 	char c;
 	string s;
 
-	c = in.get(); 
+	in.seekg(count());
+
+	c = in.get();
 
 	while(isspace(c)) {
-		c = in.get(); 
+		c = in.get();
 	}
 
 	if(single_char.find(c) != string::npos){
@@ -96,30 +97,31 @@ std::string Lexer::extractString(){
 		return s;
 	}
 
-	//Going to check if "sin", "cos", "pi" or "avg"
+	//Check if "sin", "cos", "pi" or "avg"
 	else if(sensitive_chars.find(c) != string::npos){
+
 		s = s + c; //Append to string
 
 
-		while(sensitive_chars.find(s) != string::npos) {
-			c = in.get(); 
-			s = s + c;
+		while(true) {
+			c = in.get();
+			if(sensitive_chars.find(c) != string::npos)
+				s = s + c;
+			else {
+				in.unget();
+				break;
+			}
 		}
 
-		if(s.size() > 3) {
-			throw std::domain_error("Error at string : " + s);
-			
-		}else if(s == "sin" || s == "cos" && in.get() != '(') {
-			in.unget();	
-			throw std::domain_error("Error at string : " + s);
-		}
+		if(s.size() > 3) 
+			throw std::domain_error("BAD TOKEN (too long): " + s);
+		else
+			return s;
+
 		
 
-		return s;
-
-
 	}else{
-		throw std::domain_error("Not a valid character : " + c);
+		throw std::domain_error("BAD TOKEN: " + c);
 	}
 
 }
