@@ -132,77 +132,99 @@ bool parse(Exp& exp){
 	std::vector<Lexer::token> tokVec;
 
 
-  	while(){
+	tokVec.push_back(lexer.next());
+	
+	//Check SIN/COS
+	if(tokVec.back() == Lexer::token[2] || tokVec.back() == Lexer::token[3])
+  		checkSinCos(tokVec);
+	
+	//Check AVG 
+	else if(tokVec.back() == Lexer::token[8])
+		checkAverage(tokVec);
 
-	  	//Check the right number of parentheses
-	  	if(lexer.peek() == Lexer::token[5])
-	  		parentheses++;
-	  	if(lexer.peek() == Lexer::token[6])
-	  		parentheses--;
-
-  	  	tokVec.push_back(lexer.next());
-
-	  	//Check if OPEN_PAR follows SIN,COS 
-		if(tokVec == Lexer::token[2] || tokVec == Lexer::token[3]  && lexer.peek() == token[5]){
-			int temp_PAR = parentheses;
-
-	  		parentheses++;
-		  	tokVec.push_back(lexer.next()); //Takes OPEN_PAR token
-
-		  	//Check that pi is the left hand operand in SIN/COS
-		  	if(lexer.peek() != token[4])
-		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-		  
-		  	if(temp_PAR != parentheses)// checks if SIN/COS closes with parentheses
-		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-		}
-
-		//Check AVG format
-		if(lexer.peek() == Lexer::token[8]){
-			int temp_PAR = parentheses;
-		  	tokVec.push_back(lexer.next()); //Takes AVG token
-
-	  		//Check if OPEN_PAR follows avg
-		  	if(lexer.peek() != token[5])
-		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  		parentheses++;		  	
-		  	tokVec.push_back(lexer.next());//Takes OPEN_PAR token
-
-		  	//Check COMMA
-		  	if(lexer.peek() == Lexer::token[9]){
-
-
-
-		  	if(temp_PAR != parentheses)// checks if AVG closes with parentheses
-		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-		  	}
-		}
-	}
-
-	if(parentheses != 0)
-		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	//Check product (starts with OPEN_PAR)
+	else if(tokVec.back() == Lexer::token[5])
+		checkProduct(tokVec);
+	
+	//Check X/Y
+	else if(tokVec.back() == Lexer::token[0] || tokVec.back() == Lexer::token[1])
+  	  	tokVec.push_back(lexer.next());		  	
+		
 }
 
-void checkSinCos(){
+void checkSinCos(std::vector<Lexer::token>& tokVec){
 	Exp& tempExp;
-	
-	if(tokVec == Lexer::token[2] || tokVec == Lexer::token[3]  && lexer.peek() == token[5]){
-	int temp_PAR = parentheses;
 
-	parentheses++;
+	//Check if OPEN_PAR follows SIN/COS
+	if(lexer.peek() != token[5])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
   	tokVec.push_back(lexer.next()); //Takes OPEN_PAR token
 
   	//Check that pi is the left hand operand in SIN/COS
   	if(lexer.peek() != token[4])
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
   	
-  	parse()
-  	if(temp_PAR != parentheses)// checks if SIN/COS closes with parentheses
-  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-	}
+  	tokVec.push_back(lexer.next()); //Takes PI token
 
+	//Check if TIMES follows PI
+  	if(lexer.peek() != token[7])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes TIMES token
+
+  	parse(tempExp); //Parse expr1
+
+	//Check if SIN/COS ends with CLOSE_PAR
+	if(lexer.peek() != token[6])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
+	
 }
-void checkAverage();
-void checkProduct();
+
+void checkAverage(std::vector<Lexer::token>& tokVec){
+	Exp& tempExp;
+
+	//Check if OPEN_PAR follows avg
+  	if(lexer.peek() != token[5])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes OPEN_PAR token
+
+  	parse(tempExp); //Parse expr1
+
+  	//Check COMMA
+  	if(lexer.peek() != Lexer::token[9])
+		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes COMMA token
+
+	parse(tempExp); //Parse expr2
+
+	// checks if AVG ends with CLOSE_PAR 
+  	if(lexer.peek() != token[6])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
+
+
+ }
+void checkProduct(std::vector<Lexer::token>& tokVec){
+	Exp& tempExp;
+  	parse(tempExp); //Parse expr1
+
+  	//Check TIMES
+  	if(lexer.peek() != token[7])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes TIMES token
+
+	parse(tempExp); //Parse expr2
+	
+	// checks if the product ends with CLOSE_PAR 
+  	if(lexer.peek() != token[6])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
+}
