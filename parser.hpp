@@ -33,8 +33,12 @@ typedef std::vector<std::string> Exp;
 
 
 class Parser {
-explicit Parser(std::istream& in);
-bool parse(Exp& exp);
+	explicit Parser(std::istream& in);
+	bool parse(Exp& exp);
+
+	private:	
+	std::istream& in;
+ 	Lexer::Lexer lexer(is);
 };
 
 

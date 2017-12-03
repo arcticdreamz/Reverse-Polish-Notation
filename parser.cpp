@@ -5,7 +5,6 @@
 #include <ios> //std::streamoff
 #include <stdexcept> //domain_error
 #include <cctype> //isspace
-#include <fstream>
 
 using std::string;
 using std::endl;
@@ -84,14 +83,13 @@ std::string Lexer::extractString(){
 	char c;
 	string s;
 
-	in.seekg(count());
 
-	c = in.get();
-
-	while(isspace(c)) {
-		c = in.get();
+	//Ignore whitespace
+	while(isspace(c = in.get())) {
+		if(in.eof())
+			throw std::domain_error("EOI");
 	}
-
+	//Check if "xy()*,"
 	if(single_char.find(c) != string::npos){
 		s = s + c;
 		return s;
@@ -100,28 +98,111 @@ std::string Lexer::extractString(){
 	//Check if "sin", "cos", "pi" or "avg"
 	else if(sensitive_chars.find(c) != string::npos){
 
-		s = s + c; //Append to string
-
+		s = s + c; 
 
 		while(true) {
 			c = in.get();
-			if(sensitive_chars.find(c) != string::npos)
+			if(in.eof()) //Check for end of file
+				throw std::domain_error("EOI");
+			else if(sensitive_chars.find(c) != string::npos)
 				s = s + c;
 			else {
-				in.unget();
+				in.unget();// We read a character that's not sensitive
 				break;
 			}
 		}
 
 		if(s.size() > 3) 
-			throw std::domain_error("BAD TOKEN (too long): " + s);
+			throw std::domain_error("BAD TOKEN: " + s);
 		else
 			return s;
-
-		
-
 	}else{
 		throw std::domain_error("BAD TOKEN: " + c);
 	}
 
 }
+
+
+Parser::Parser(std::istream& inputStream) : in(inputStream){
+ 	Lexer::Lexer lexer(is);
+}
+
+bool parse(Exp& exp){
+	int parentheses = 0;
+	std::vector<Lexer::token> tokVec;
+
+
+  	while(){
+
+	  	//Check the right number of parentheses
+	  	if(lexer.peek() == Lexer::token[5])
+	  		parentheses++;
+	  	if(lexer.peek() == Lexer::token[6])
+	  		parentheses--;
+
+  	  	tokVec.push_back(lexer.next());
+
+	  	//Check if OPEN_PAR follows SIN,COS 
+		if(tokVec == Lexer::token[2] || tokVec == Lexer::token[3]  && lexer.peek() == token[5]){
+			int temp_PAR = parentheses;
+
+	  		parentheses++;
+		  	tokVec.push_back(lexer.next()); //Takes OPEN_PAR token
+
+		  	//Check that pi is the left hand operand in SIN/COS
+		  	if(lexer.peek() != token[4])
+		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+		  
+		  	if(temp_PAR != parentheses)// checks if SIN/COS closes with parentheses
+		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+		}
+
+		//Check AVG format
+		if(lexer.peek() == Lexer::token[8]){
+			int temp_PAR = parentheses;
+		  	tokVec.push_back(lexer.next()); //Takes AVG token
+
+	  		//Check if OPEN_PAR follows avg
+		  	if(lexer.peek() != token[5])
+		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+	  		parentheses++;		  	
+		  	tokVec.push_back(lexer.next());//Takes OPEN_PAR token
+
+		  	//Check COMMA
+		  	if(lexer.peek() == Lexer::token[9]){
+
+
+
+		  	if(temp_PAR != parentheses)// checks if AVG closes with parentheses
+		  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+		  	}
+		}
+	}
+
+	if(parentheses != 0)
+		throw std::domain_error("PARSE ERROR at " + lexer.count());
+}
+
+void checkSinCos(){
+	Exp& tempExp;
+	
+	if(tokVec == Lexer::token[2] || tokVec == Lexer::token[3]  && lexer.peek() == token[5]){
+	int temp_PAR = parentheses;
+
+	parentheses++;
+  	tokVec.push_back(lexer.next()); //Takes OPEN_PAR token
+
+  	//Check that pi is the left hand operand in SIN/COS
+  	if(lexer.peek() != token[4])
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+  	
+  	parse()
+  	if(temp_PAR != parentheses)// checks if SIN/COS closes with parentheses
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}
+
+}
+void checkAverage();
+void checkProduct();
