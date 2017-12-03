@@ -38,7 +38,11 @@ class Parser {
 
 	private:	
 	std::istream& in;
- 	Lexer::Lexer lexer(is);
+ 	Lexer::Lexer lexer;
+
+ 	void checkAverage(std::vector<Lexer::token>& tokVec);
+ 	void checkProduct(std::vector<Lexer::token>& tokVec);
+ 	void checkSinCos(std::vector<Lexer::token>& tokVec);
 };
 
 

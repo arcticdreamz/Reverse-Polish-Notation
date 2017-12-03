@@ -152,7 +152,7 @@ bool parse(Exp& exp){
 		
 }
 
-void checkSinCos(std::vector<Lexer::token>& tokVec){
+void checkSinCos(std::vector<Lexer::token>& tokVec){  
 	Exp& tempExp;
 
 	//Check if OPEN_PAR follows SIN/COS
