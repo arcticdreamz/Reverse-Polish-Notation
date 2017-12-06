@@ -9,9 +9,45 @@
 using std::string;
 using std::endl;
 using std::cout;
+using std::vector;
+using std::cin;
 
-Lexer::Lexer(std::istream& inputStream) : in(inputStream){
+
+
+int main (){
+  std::string input = "(sin( pi*avg(x , y)) * x)";
+  std::istringstream is(input);
+  std::cout<<"STR ="<<input<<'\n';
+
+//  Lexer lexer(is);
+//  Lexer::token tok = lexer.next();
+
+
+  std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
+/* while(true){
+
+ 	tok = lexer.next();
+  	std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
+  }
+*/
+
+    Parser parser(is);
+  Exp expe;
+  if(parser.parse(expe) == true)
+    std::cout<<"Parse OK"<<'\n';
+  else std::cout<<"Parse NOT OK"<<'\n';
+  std::cout<<"expe =";
+  for(auto it= expe.begin(); it != expe.end();++it)
+    std::cout<<" "<<*it;
+
+  return 0;
 }
+
+
+
+
+
+Lexer::Lexer(std::istream& inputStream) : in(inputStream){}
 
 Lexer::token Lexer::next() {
 	if(in) {
@@ -27,7 +63,7 @@ Lexer::token Lexer::next() {
 
 Lexer::token Lexer::peek(){
 	if(in) {
-		
+
 		in.seekg(count()); //Go to the current position
 		string s = extractString();
 		in.seekg(count()); //Go back to where we were before extracting the string
@@ -51,18 +87,18 @@ Lexer::token Lexer::identifyToken(const string s) {
 
 	if(s == "Y")
 		return Lexer::token::Y;
-	
+
 	if(s == "sin")
 		return Lexer::token::SIN;
-	
+
 	if(s == "cos")
 		return Lexer::token::COS;
-	
+
 	if(s == "pi")
 		return Lexer::token::PI;
 
 	if(s == "(")
-		return Lexer::token::OPEN_PAR;		
+		return Lexer::token::OPEN_PAR;
 
 	if(s == ")")
 		return Lexer::token::CLOSE_PAR;
@@ -98,7 +134,7 @@ std::string Lexer::extractString(){
 	//Check if "sin", "cos", "pi" or "avg"
 	else if(sensitive_chars.find(c) != string::npos){
 
-		s = s + c; 
+		s = s + c;
 
 		while(true) {
 			c = in.get();
@@ -112,7 +148,7 @@ std::string Lexer::extractString(){
 			}
 		}
 
-		if(s.size() > 3) 
+		if(s.size() > 3)
 			throw std::domain_error("BAD TOKEN: " + s);
 		else
 			return s;
@@ -123,108 +159,128 @@ std::string Lexer::extractString(){
 }
 
 
-Parser::Parser(std::istream& inputStream) : in(inputStream){
- 	Lexer::Lexer lexer(is);
-}
-
-bool parse(Exp& exp){
-	int parentheses = 0;
-	std::vector<Lexer::token> tokVec;
+Parser::Parser(std::istream& inputStream): lexer(inputStream){};
 
 
-	tokVec.push_back(lexer.next());
-	
+bool Parser::parse(Exp& exp){
+
 	//Check SIN/COS
-	if(tokVec.back() == Lexer::token[2] || tokVec.back() == Lexer::token[3])
-  		checkSinCos(tokVec);
-	
-	//Check AVG 
-	else if(tokVec.back() == Lexer::token[8])
-		checkAverage(tokVec);
+	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS)
+  		checkSinCos(exp);
+
+	//Check AVG
+	else if(lexer.peek()  == Lexer::AVG)
+		checkAverage(exp);
 
 	//Check product (starts with OPEN_PAR)
-	else if(tokVec.back() == Lexer::token[5])
-		checkProduct(tokVec);
-	
+	else if(lexer.peek()  == Lexer::OPEN_PAR)
+		checkProduct(exp);
+
 	//Check X/Y
-	else if(tokVec.back() == Lexer::token[0] || tokVec.back() == Lexer::token[1])
-  	  	tokVec.push_back(lexer.next());		  	
-		
+	else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
+        lexer.next();
+  	  	exp.push_back("X");
+	}
+    else if(lexer.peek() == Lexer::Y){
+        lexer.next();
+        exp.push_back("Y");
+    }
+	return true;
+
 }
 
-void checkSinCos(std::vector<Lexer::token>& tokVec){  
-	Exp& tempExp;
+void Parser::checkSinCos(Exp& exp){
+
+  	lexer.next();
+  	operatorStack.push_back("sin"); //Takes SIN/COS token
 
 	//Check if OPEN_PAR follows SIN/COS
-	if(lexer.peek() != token[5])
+	if(lexer.peek() != Lexer::OPEN_PAR)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next()); //Takes OPEN_PAR token
+  	lexer.next();
+  	operatorStack.push_back("("); //Takes OPEN_PAR token
 
   	//Check that pi is the left hand operand in SIN/COS
-  	if(lexer.peek() != token[4])
+  	if(lexer.peek() != Lexer::PI)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
-  	
-  	tokVec.push_back(lexer.next()); //Takes PI token
+
+  	lexer.next();
+  	exp.push_back("pi"); //Takes PI token
 
 	//Check if TIMES follows PI
-  	if(lexer.peek() != token[7])
+  	if(lexer.peek() != Lexer::TIMES)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes TIMES token
+  	lexer.next();
+  	operatorStack.push_back("*");//Takes TIMES token
 
-  	parse(tempExp); //Parse expr1
+  	parse(exp); //Parse expr1
 
 	//Check if SIN/COS ends with CLOSE_PAR
-	if(lexer.peek() != token[6])
+	if(lexer.peek() != Lexer::CLOSE_PAR)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
-	
+	lexer.next();
+  	operatorStack.push_back(")");//Takes CLOSE_PAR token
+
 }
 
-void checkAverage(std::vector<Lexer::token>& tokVec){
-	Exp& tempExp;
+void Parser::checkAverage(Exp& exp){
+
+	lexer.next(); //Skip AVG token
 
 	//Check if OPEN_PAR follows avg
-  	if(lexer.peek() != token[5])
+  	if(lexer.peek() != Lexer::OPEN_PAR)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes OPEN_PAR token
+  	lexer.next();
+  	operatorStack.push_back("(");//Takes OPEN_PAR token
 
-  	parse(tempExp); //Parse expr1
+  	parse(exp); //Parse expr1
 
   	//Check COMMA
-  	if(lexer.peek() != Lexer::token[9])
+  	if(lexer.peek() != Lexer::COMMA)
 		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes COMMA token
+	lexer.next(); //Skip COMMA token
 
-	parse(tempExp); //Parse expr2
+  	operatorStack.push_back("+");//Takes '+'
 
-	// checks if AVG ends with CLOSE_PAR 
-  	if(lexer.peek() != token[6])
+	parse(exp); //Parse expr2
+
+	// checks if AVG ends with CLOSE_PAR
+  	if(lexer.peek() != Lexer::CLOSE_PAR)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
+  	lexer.next();
+  	operatorStack.push_back(")");//Takes CLOSE_PAR token
+  	operatorStack.push_back("/");//Takes "/"
+  	exp.push_back("2");//Takes CLOSE_PAR token
+
 
 
  }
-void checkProduct(std::vector<Lexer::token>& tokVec){
-	Exp& tempExp;
-  	parse(tempExp); //Parse expr1
+void Parser::checkProduct(Exp& exp){
+
+  	lexer.next();
+  	operatorStack.push_back("(");//Takes OPEN_PAR token
+
+  	parse(exp); //Parse expr1
 
   	//Check TIMES
-  	if(lexer.peek() != token[7])
+  	if(lexer.peek() != Lexer::TIMES)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes TIMES token
+  	lexer.next();
+  	operatorStack.push_back("*");//Takes TIMES token
 
-	parse(tempExp); //Parse expr2
-	
-	// checks if the product ends with CLOSE_PAR 
-  	if(lexer.peek() != token[6])
+	parse(exp); //Parse expr2
+
+	// checks if the product ends with CLOSE_PAR
+  	if(lexer.peek() != Lexer::CLOSE_PAR)
   		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-  	tokVec.push_back(lexer.next());//Takes CLOSE_PAR token
+	lexer.next();
+  	operatorStack.push_back(")");//Takes CLOSE_PAR token
 }

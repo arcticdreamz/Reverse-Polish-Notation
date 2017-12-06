@@ -1,5 +1,5 @@
 #ifndef _PARSER_H
-#define _PARSER_H 
+#define _PARSER_H
 #include <string>
 #include <vector>
 #include <ios>
@@ -9,8 +9,7 @@
 
 
 
-class Lexer {
-	public:
+class Lexer {	public:
 	enum token {X, Y, SIN, COS, PI, OPEN_PAR, CLOSE_PAR, TIMES, AVG, COMMA};
 	explicit Lexer(std::istream& in);
 	token next();
@@ -19,7 +18,7 @@ class Lexer {
 	void reset();
 
 
-	private:	
+	private:
 	std::istream& in;
 	std::streamoff counter = 0;
 
@@ -33,16 +32,17 @@ typedef std::vector<std::string> Exp;
 
 
 class Parser {
+    public:
 	explicit Parser(std::istream& in);
 	bool parse(Exp& exp);
 
-	private:	
-	std::istream& in;
- 	Lexer::Lexer lexer;
+	private:
+    Lexer lexer;
+ 	Exp operatorStack;
 
- 	void checkAverage(std::vector<Lexer::token>& tokVec);
- 	void checkProduct(std::vector<Lexer::token>& tokVec);
- 	void checkSinCos(std::vector<Lexer::token>& tokVec);
+ 	void checkAverage(Exp& exp);
+ 	void checkProduct(Exp& exp);
+ 	void checkSinCos(Exp& exp);
 };
 
 

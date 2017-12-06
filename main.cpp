@@ -17,26 +17,27 @@ int main (){
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
 
-  Lexer lexer(is);
-  Lexer::token tok = lexer.next();
+//  Lexer lexer(is);
+//  Lexer::token tok = lexer.next();
 
 
   std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
-  while(true){ 
+/* while(true){ 
 
-  	tok = lexer.next();
+ 	tok = lexer.next();
   	std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
   }
+*/
 
- //Parser parser(is);
- /* Exp exp;
-  if(parser.parse(exp)==1)
+ Parser parser(is);
+  Exp exp;
+  if(parser.parse(exp) == true)
     std::cout<<"Parse OK"<<'\n';
   else std::cout<<"Parse NOT OK"<<'\n';
   std::cout<<"exp =";
   for(Exp::iterator it= exp.begin(); it != exp.end();++it)
     std::cout<<" "<<*it;
-*/
+
   return 0;
 }
 
