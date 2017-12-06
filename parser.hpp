@@ -39,10 +39,11 @@ class Parser {
 	private:
     Lexer lexer;
  	Exp operatorStack;
-
+ 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", "COMMA"};
  	void checkAverage(Exp& exp);
  	void checkProduct(Exp& exp);
  	void checkSinCos(Exp& exp);
+ 	void infixToRPN(Exp& exp);
 };
 
 

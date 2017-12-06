@@ -185,6 +185,7 @@ bool Parser::parse(Exp& exp){
         lexer.next();
         exp.push_back("Y");
     }
+
 	return true;
 
 }
@@ -283,4 +284,47 @@ void Parser::checkProduct(Exp& exp){
 
 	lexer.next();
   	operatorStack.push_back(")");//Takes CLOSE_PAR token
+}
+
+
+void Parser::infixToRPN(Exp& exp){
+	//While there are tokens to be read (else EOI)
+	while(true){
+
+		if(lexer.peek() == Lexer::PI || lexer.peek() == Lexer::OPEN_PAR
+		|| lexer.peek() == Lexer::X	 || lexer.peek() == Lexer::Y){
+
+			exp.push_back(tokenToText[lexer.next()]);
+		}
+		else if(lexer.peek() == Lexer::COMMA || lexer.peek() == Lexer::AVG)
+			lexer.next(); //Skip the token
+		else if(lexer.peek() == Lexer::CLOSE_PAR){
+
+			lexer.next(); //Discard the token
+
+			//Pop the operators onto the queue as long as
+			//we don't encounter a OPEN_PAR
+			while(operatorStack.back() != Lexer::OPEN_PAR){
+				exp.push_back(operatorStack.pop_back());
+			}
+
+			//If the stack is empty and we haven't found the CLOSE_PAR
+			if(operatorStack.empty())
+				//MISMATCHED PARENTHESES
+			//Pop the CLOSE_PAR from the stack
+			else{operatorStack.pop_back();}
+		}
+
+		//For any other token
+		else(){ 
+			//We pop the operators until empty or until 
+			//we encoutner OPEN_PAR
+			while(!operatorStack.empty() && operatorStack.back() != Lexer::OPEN_PAR){
+				exp.push_back(operatorStack.pop_back());
+			}
+
+			//Push the read operator onto the operator stack
+			operatorStack.push_back(tokenToText[lexer.next()]);
+		}
+	}
 }
