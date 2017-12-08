@@ -25,7 +25,7 @@ using std::cin;
 
  
 int main (){
-  std::string input = "sin(pi * x))";
+  std::string input = "sin(pi* avg(avg(x,y),x))";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
 
@@ -84,7 +84,7 @@ Lexer::token Lexer::identifyToken(const string s) {
 	if(s == "x")
 		return Lexer::token::X;
 
-	if(s == "Y")
+	if(s == "y")
 		return Lexer::token::Y;
 
 	if(s == "sin")
@@ -176,8 +176,59 @@ bool Parser::parse(Exp& exp){
 	*/
 	//Phase 2 - SYNTAX
 	checkSyntax();
+	return true;
 }
+void Parser::checkSinCos(){
 
+	lexer.next(); //Ignore token
+
+	//Check if OPEN_PAR follows SIN/COS
+	if(lexer.peek() != Lexer::OPEN_PAR)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	lexer.next(); //Ignore token
+
+  	//Remember the position of the OPEN_PAR
+  	openParLocations.push_back(lexer.count());
+
+  	//Check that pi is the left hand operand in SIN/COS
+  	if(lexer.peek() != Lexer::PI)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	lexer.next(); //Ignore token
+
+	//Check if TIMES follows PI
+  	if(lexer.peek() != Lexer::TIMES)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	lexer.next(); //Ignore token
+
+  	//Searching for CLOSE_PAR
+	while(lexer.peek() != Lexer::CLOSE_PAR){
+		checkSyntax();
+	}
+
+	//If not found
+	if(lexer.peek() != Lexer::CLOSE_PAR)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+  	
+  	lexer.next(); //Ignore token
+
+  	//If the container is empty (not enough CLOSE_PAR) OR
+  	// the size of the container is 1 and there is still one CLOSE_PAR left
+  	// 
+  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+			throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}else{
+		openParLocations.pop_back();
+	}
+}
+void checkAverage(){
+
+}
+void checkProduct(){
+
+}
 void Parser::checkSyntax() {
 
 	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
@@ -190,6 +241,7 @@ void Parser::checkSyntax() {
 
 	  	lexer.next(); //Ignore token
 
+	  	//Remember the position of the OPEN_PAR
 	  	openParLocations.push_back(lexer.count());
 
 	  	//Check that pi is the left hand operand in SIN/COS
@@ -237,6 +289,10 @@ void Parser::checkSyntax() {
 			throw std::domain_error("PARSE ERROR at " + lexer.count());
 		
 	  	lexer.next(); //Ignore token OPEN_PAR
+	  	
+	  	//Remember the position of the OPEN_PAR
+	  	openParLocations.push_back(lexer.count());
+
 
 		while(lexer.peek() != Lexer::COMMA){
 			checkSyntax();
@@ -274,6 +330,9 @@ void Parser::checkSyntax() {
 
 		lexer.next(); //Ignore the OPEN_PAR
 
+	  	//Remember the position of the OPEN_PAR
+	  	openParLocations.push_back(lexer.count());
+
 		while(lexer.peek() != Lexer::TIMES){
 			checkSyntax();
 		}
@@ -302,7 +361,6 @@ void Parser::checkSyntax() {
 	  		openParLocations.pop_back();
   		}
   		
-
 	//Check X/Y
 	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
 		lexer.next();

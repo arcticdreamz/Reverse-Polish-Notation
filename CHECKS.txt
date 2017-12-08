@@ -1,0 +1,7 @@
+Faire attention à :
+	
+	Regarder si on choppe bien les bon tokens ( ATTENTION aux majuscules/minuscules de x/y )
+	Bon nombre de parenthèses ouvrantes ET fermantes
+	La virgule au milieu de AVG
+	Le "(pi*" au début du sinus/cosinus
+	Expressions incomplètes (du style sin(pi * ) )
