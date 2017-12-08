@@ -9,7 +9,10 @@
 
 
 
-class Lexer {	public:
+class Lexer {	
+	friend class Parser;
+
+	public:
 	enum token {X, Y, SIN, COS, PI, OPEN_PAR, CLOSE_PAR, TIMES, AVG, COMMA};
 	explicit Lexer(std::istream& in);
 	token next();
@@ -20,7 +23,7 @@ class Lexer {	public:
 
 	private:
 	std::istream& in;
-	std::streamoff counter = 0;
+	std::streamoff counter;
 
 	token identifyToken(const std::string s);
 	std::string extractString();
@@ -39,11 +42,12 @@ class Parser {
 	private:
     Lexer lexer;
  	Exp operatorStack;
- 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", "COMMA"};
- 	void checkAverage(Exp& exp);
- 	void checkProduct(Exp& exp);
- 	void checkSinCos(Exp& exp);
- 	void infixToRPN(Exp& exp);
+ 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", "+"};
+ 	void checkAverage(Exp& exp,Exp& operatorStack);
+ 	void checkProduct(Exp& exp,Exp& operatorStack);
+ 	void checkSinCos(Exp& exp,Exp& operatorStack);
+ 	void checkXY(Exp& exp,Exp& operatorStack);
+ 	void infixToRPN(Exp& exp, Lexer::token,Exp& operatorStack); //maybe reference for token, need to think
 };
 
 
