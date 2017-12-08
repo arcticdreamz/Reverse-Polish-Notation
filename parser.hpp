@@ -42,7 +42,9 @@ class Parser {
 	private:
     Lexer lexer;
  	Exp operatorStack;
- 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", "+"};
+	std::vector<std::streamoff> openParLocations;
+
+ 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", ","};
  	void checkAverage(Exp& exp,Exp& operatorStack);
  	void checkProduct(Exp& exp,Exp& operatorStack);
  	void checkSinCos(Exp& exp,Exp& operatorStack);

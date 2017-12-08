@@ -163,144 +163,142 @@ Parser::Parser(std::istream& inputStream): lexer(inputStream){};
 
 
 bool Parser::parse(Exp& exp){
-	Exp tempOperatorStack;
-	bool parsingOK = false;
-	if(!lexer.in.eof()){
-		checkSinCos(exp,tempOperatorStack);
-		while(!tempOperatorStack.empty()){
-			operatorStack.push_back(tempOperatorStack.back());
-			tempOperatorStack.pop_back();
-		}
-
-
-		checkProduct(exp,tempOperatorStack);
-		while(!tempOperatorStack.empty()){
-			operatorStack.push_back(tempOperatorStack.back());
-			tempOperatorStack.pop_back();
-		}
-
- 		checkAverage(exp,tempOperatorStack); 
-		while(!tempOperatorStack.empty()){
-			operatorStack.push_back(tempOperatorStack.back());
-			tempOperatorStack.pop_back();
-		}
-
- 		checkXY(exp,tempOperatorStack);
-		while(!tempOperatorStack.empty()){
-			operatorStack.push_back(tempOperatorStack.back());
-			tempOperatorStack.pop_back();
-		}
+	//Phase 1
+	std::vector<Lexer::token> tokenVector;
+	while(!lexer.in.eof()){
+		tokenVector.push_back(lexer.next());
 	}
-	while(!operatorStack.empty()){
-		exp.push_back(operatorStack.back());
-		operatorStack.pop_back();
-		//ISSUE WITH BRACKET
+	auto it = tokenVector.begin();
+	while(it != tokenVector.end()){
+  		std::cout << tokenToText[*it] << " " << lexer.count()<< endl;
+  		++it;
 	}
 
-	if(lexer.peek() == Lexer::CLOSE_PAR){ //Stop the recursion
-		return true;
-	}
-	parsingOK = true;
-	return parsingOK;
-
+	//Phase 2 - SYNTAX
+	checkSyntax();
 }
 
-void Parser::checkSinCos(Exp& exp,Exp& operatorStackFunc){
+void checkSyntax() {
+
 	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc); //Takes SIN/COS token
-		
+
+		lexer.next(); //Ignore token
 
 		//Check if OPEN_PAR follows SIN/COS
 		if(lexer.peek() != Lexer::OPEN_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc); //Takes OPEN_PAR token
+	  	lexer.next(); //Ignore token
+
+	  	openParLocations.push_back(lexer.count());
 
 	  	//Check that pi is the left hand operand in SIN/COS
 	  	if(lexer.peek() != Lexer::PI)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc); //Takes PI token
+	  	lexer.next(); //Ignore token
 
 		//Check if TIMES follows PI
 	  	if(lexer.peek() != Lexer::TIMES)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes TIMES token
+	  	lexer.next(); //Ignore token
 
-	  	Exp tempExp;
-	  	parse(tempExp);//Recursive call
-	  	exp.insert(exp.end(),tempExp.begin(), tempExp.end());
+	  	//Searching for CLOSE_PAR
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			checkSyntax();
+		}
 
-		//Check if SIN/COS ends with CLOSE_PAR
+		//If not found
+		if(lexer.peek() != Lexer::CLOSE_PAR)
+	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	  	//If found; we pop the last parenthesis
+	  	openParLocations.pop_back();
+
+
+	}
+
+	//Check AVG
+	else if(lexer.peek() == Lexer::AVG){
+
+		lexer.next(); //Ignore token AVG
+
+		//Check if OPEN_PAR follows avg
+	  	if(lexer.peek() != Lexer::OPEN_PAR)
+			throw std::domain_error("PARSE ERROR at " + lexer.count());
+		
+	  	lexer.next(); //Ignore token OPEN_PAR
+
+		while(lexer.peek() != Lexer::COMMA){
+			checkSyntax();
+		}
+
+		//Check COMMA
+	  	if(lexer.peek() != Lexer::COMMA)
+			throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+		lexer.next(); //Ignore the COMMA
+
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			checkSyntax();
+		}
+
+		// checks if AVG ends with CLOSE_PAR
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-		infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes CLOSE_PAR token
+	  	lexer.next();
+
+	  	//If found we pop the last parenthesis
+	  	if(!openParLocations.empty()){
+	  		openParLocations.pop_back();
+
+  		//There is one closing parentheses that is too much
+  		}else{
+	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+  		}
+
 	}
-}
 
-void Parser::checkAverage(Exp& exp,Exp& operatorStackFunc){
-	if(lexer.peek() == Lexer::AVG){
+	//Check product
+	else if(lexer.peek() == Lexer::OPEN_PAR){
 
-		//lexer.next(); //Skip AVG token
-		infixToRPN(exp,lexer.next(),operatorStackFunc);
+		lexer.next(); //Ignore the OPEN_PAR
 
-		//Check if OPEN_PAR follows avg
-		/*  	if(lexer.peek() != Lexer::OPEN_PAR)
-			throw std::domain_error("PARSE ERROR at " + lexer.count());
-		*/
-		infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes OPEN_PAR token
-
-		//parse(exp); //Parse expr1
-
-		//Check COMMA
-		/*  	if(lexer.peek() != Lexer::COMMA)
-		throw std::domain_error("PARSE ERROR at " + lexer.count());
-		*/
-		infixToRPN(exp,lexer.next(),operatorStackFunc); //Takes '+'
-
-		//parse(exp); //Parse expr2
-
-		// checks if AVG ends with CLOSE_PAR
-		/*  	if(lexer.peek() != Lexer::CLOSE_PAR)
-			throw std::domain_error("PARSE ERROR at " + lexer.count());
-		*/
-		infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes CLOSE_PAR token
-		//operatorStackFunc.push_back("/");//Takes "/"
-		//exp.push_back("2");//Takes CLOSE_PAR token
-	}
- }
-void Parser::checkProduct(Exp& exp,Exp& operatorStackFunc){
-	if(lexer.peek() == Lexer::OPEN_PAR){
-
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes OPEN_PAR token
-
-	  	//parse(exp); //Parse expr1
-
+		while(lexer.peek() != Lexer::TIMES){
+			checkSyntax();
+		}
 	  	//Check TIMES
-	/*  	if(lexer.peek() != Lexer::TIMES)
+	  	if(lexer.peek() != Lexer::TIMES)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-	*/
-	  	infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes TIMES token
+		
+		lexer.next(); //Ignore the TIMES
 
-		//parse(exp); //Parse expr2
-
-		// checks if the product ends with CLOSE_PAR
-	/*  	if(lexer.peek() != Lexer::CLOSE_PAR)
+		// checks if product ends with CLOSE_PAR
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			checkSyntax();
+		}
+		//if not found
+		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-	*/
-		infixToRPN(exp,lexer.next(),operatorStackFunc);//Takes CLOSE_PAR token
-	}
-}
 
-void Parser::checkXY(Exp& exp,Exp& operatorStackFunc) {
-	if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
-        infixToRPN(exp,lexer.next(),operatorStackFunc); //Takes X/Y
-		operatorStack.insert(operatorStack.end(),operatorStackFunc.begin(), operatorStackFunc.end());
+	  	lexer.next();
 
+	  	//If found we pop the last parenthesis
+	  	if(!openParLocations.empty()){
+	  		openParLocations.pop_back();
+
+  		//There is one closing parentheses that is too much
+  		}else{
+	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+  		}
+	
+	//Check X/Y
+	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
+		lexer.next();
 	}
-}
+} //end of checkSyntax
+
 
 
 void Parser::infixToRPN(Exp& exp,Lexer::token tok,Exp& operatorStackFunc){
@@ -372,3 +370,46 @@ void Parser::infixToRPN(Exp& exp,Lexer::token tok,Exp& operatorStackFunc){
 	return true;
 
 	*/
+
+	//-------------------------------P------------------------------ARSER
+/*	bool parsingOK = false;
+	if(!lexer.in.eof()){
+		checkSinCos(exp,tempOperatorStack);
+		while(!tempOperatorStack.empty()){
+			operatorStack.push_back(tempOperatorStack.back());
+			tempOperatorStack.pop_back();
+		}
+
+
+		checkProduct(exp,tempOperatorStack);
+		while(!tempOperatorStack.empty()){
+			operatorStack.push_back(tempOperatorStack.back());
+			tempOperatorStack.pop_back();
+		}
+
+ 		checkAverage(exp,tempOperatorStack); 
+		while(!tempOperatorStack.empty()){
+			operatorStack.push_back(tempOperatorStack.back());
+			tempOperatorStack.pop_back();
+		}
+
+ 		checkXY(exp,tempOperatorStack);
+		while(!tempOperatorStack.empty()){
+			operatorStack.push_back(tempOperatorStack.back());
+			tempOperatorStack.pop_back();
+		}
+	}
+	while(!operatorStack.empty()){
+		exp.push_back(operatorStack.back());
+		operatorStack.pop_back();
+		//ISSUE WITH BRACKET
+	}
+
+	if(lexer.peek() == Lexer::CLOSE_PAR){ //Stop the recursion
+		return true;
+	}
+	parsingOK = true;
+	return parsingOK;
+
+
+*/
