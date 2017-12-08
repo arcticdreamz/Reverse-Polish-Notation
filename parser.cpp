@@ -25,7 +25,7 @@ using std::cin;
 
  
 int main (){
-  std::string input = "sin(pi* avg(avg(x,y),x))";
+  std::string input = "sin(pi* avg(avg(x,),x))";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
 
@@ -175,9 +175,38 @@ bool Parser::parse(Exp& exp){
 	}
 	*/
 	//Phase 2 - SYNTAX
-	checkSyntax();
+	if(!checkSyntax()){
+		return false;
+	}
+
 	return true;
 }
+
+
+bool Parser::checkSyntax() {
+
+	bool syntaxOK = true;
+
+	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
+		checkSinCos();
+	}
+	//Check AVG
+	else if(lexer.peek() == Lexer::AVG){
+		checkAverage();
+	}
+	//Check product
+	else if(lexer.peek() == Lexer::OPEN_PAR){
+		 checkProduct();	
+	//Check X/Y
+	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
+		lexer.next();
+	}else{
+		syntaxOK = false;
+	}
+	return syntaxOK;
+} //end of checkSyntax
+
+
 void Parser::checkSinCos(){
 
 	lexer.next(); //Ignore token
@@ -203,6 +232,11 @@ void Parser::checkSinCos(){
 
   	lexer.next(); //Ignore token
 
+	//If there's no expr1
+	if(lexer.peek() == Lexer::CLOSE_PAR){
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}
+
   	//Searching for CLOSE_PAR
 	while(lexer.peek() != Lexer::CLOSE_PAR){
 		checkSyntax();
@@ -215,157 +249,112 @@ void Parser::checkSinCos(){
   	lexer.next(); //Ignore token
 
   	//If the container is empty (not enough CLOSE_PAR) OR
-  	// the size of the container is 1 and there is still one CLOSE_PAR left
-  	// 
+  	// the size of the container is 1 (no OPEN_PAR) 
+  	// and there is still one CLOSE_PAR left
   	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
 			throw std::domain_error("PARSE ERROR at " + lexer.count());
 	}else{
 		openParLocations.pop_back();
 	}
 }
-void checkAverage(){
-
-}
-void checkProduct(){
-
-}
-void Parser::checkSyntax() {
-
-	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
-
-		lexer.next(); //Ignore token
-
-		//Check if OPEN_PAR follows SIN/COS
-		if(lexer.peek() != Lexer::OPEN_PAR)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  	lexer.next(); //Ignore token
-
-	  	//Remember the position of the OPEN_PAR
-	  	openParLocations.push_back(lexer.count());
-
-	  	//Check that pi is the left hand operand in SIN/COS
-	  	if(lexer.peek() != Lexer::PI)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  	lexer.next(); //Ignore token
-
-		//Check if TIMES follows PI
-	  	if(lexer.peek() != Lexer::TIMES)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  	lexer.next(); //Ignore token
-
-	  	//Searching for CLOSE_PAR
-		while(lexer.peek() != Lexer::CLOSE_PAR){
-			checkSyntax();
-		}
-
-		//If not found
-		if(lexer.peek() != Lexer::CLOSE_PAR)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-	  	
-	  	lexer.next(); //Ignore token
-
-	  	//If the container is empty (not enough CLOSE_PAR) OR
-	  	// the size of the container is 1 and there is still one CLOSE_PAR left
-	  	// 
-	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
-  			throw std::domain_error("PARSE ERROR at " + lexer.count());
-  		}else{
-	  		openParLocations.pop_back();
-  		}
-
-	}
+void Parser::checkAverage(){
 	
+	lexer.next(); //Ignore token AVG
 
-	//Check AVG
-	else if(lexer.peek() == Lexer::AVG){
+	//Check if OPEN_PAR follows avg
+  	if(lexer.peek() != Lexer::OPEN_PAR)
+		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	
+  	lexer.next(); //Ignore token OPEN_PAR
+  	
+  	//Remember the position of the OPEN_PAR
+  	openParLocations.push_back(lexer.count());
 
-		lexer.next(); //Ignore token AVG
-
-		//Check if OPEN_PAR follows avg
-	  	if(lexer.peek() != Lexer::OPEN_PAR)
-			throw std::domain_error("PARSE ERROR at " + lexer.count());
-		
-	  	lexer.next(); //Ignore token OPEN_PAR
-	  	
-	  	//Remember the position of the OPEN_PAR
-	  	openParLocations.push_back(lexer.count());
-
-
-		while(lexer.peek() != Lexer::COMMA){
-			checkSyntax();
-		}
-
-		//Check COMMA
-	  	if(lexer.peek() != Lexer::COMMA)
-			throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-		lexer.next(); //Ignore the COMMA
-
-		while(lexer.peek() != Lexer::CLOSE_PAR){
-			checkSyntax();
-		}
-
-		// checks if AVG ends with CLOSE_PAR
-		if(lexer.peek() != Lexer::CLOSE_PAR)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  	lexer.next(); //Ignore the CLOSE_PAR
-
-	  	//If the container is empty (not enough CLOSE_PAR) OR
-	  	// the size of the container is 1 and there is still one CLOSE_PAR left
-	  	// 
-	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
-  			throw std::domain_error("PARSE ERROR at " + lexer.count());
-  		}else{
-	  		openParLocations.pop_back();
-  		}
-
+	//If there's no expr1
+	if(lexer.peek() == Lexer::COMMA){
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 	}
 
-	//Check product
-	else if(lexer.peek() == Lexer::OPEN_PAR){
-
-		lexer.next(); //Ignore the OPEN_PAR
-
-	  	//Remember the position of the OPEN_PAR
-	  	openParLocations.push_back(lexer.count());
-
-		while(lexer.peek() != Lexer::TIMES){
-			checkSyntax();
-		}
-	  	//Check TIMES
-	  	if(lexer.peek() != Lexer::TIMES)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-		
-		lexer.next(); //Ignore the TIMES
-
-		// checks if product ends with CLOSE_PAR
-		while(lexer.peek() != Lexer::CLOSE_PAR){
-			checkSyntax();
-		}
-		//if not found
-		if(lexer.peek() != Lexer::CLOSE_PAR)
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-
-	  	lexer.next();//Ignore the CLOSE_PAR
-
-	  	//If the container is empty (not enough CLOSE_PAR) OR
-	  	// the size of the container is 1 and there is still one CLOSE_PAR left
-	  	// 
-	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
-  			throw std::domain_error("PARSE ERROR at " + lexer.count());
-  		}else{
-	  		openParLocations.pop_back();
-  		}
-  		
-	//Check X/Y
-	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
-		lexer.next();
+	//Searching the COMMA
+	while(lexer.peek() != Lexer::COMMA){
+		checkSyntax();
 	}
-} //end of checkSyntax
+
+	//Check COMMA
+  	if(lexer.peek() != Lexer::COMMA)
+		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+	lexer.next(); //Ignore the token
+
+	//If there's no expr2
+	if(lexer.peek() == Lexer::CLOSE_PAR){
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}
+
+	while(lexer.peek() != Lexer::CLOSE_PAR){
+		checkSyntax();
+	}
+
+	// checks if AVG ends with CLOSE_PAR
+	if(lexer.peek() != Lexer::CLOSE_PAR)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	lexer.next(); //Ignore the CLOSE_PAR
+
+  	//If the container is empty (not enough CLOSE_PAR) OR
+  	// the size of the container is 1 (no OPEN_PAR) 
+  	// and there is still one CLOSE_PAR left
+  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+			throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}else{
+		openParLocations.pop_back();
+	}
+}
+void Parser::checkProduct(){
+
+	lexer.next(); //Ignore the OPEN_PAR
+
+  	//Remember the position of the OPEN_PAR
+  	openParLocations.push_back(lexer.count());
+
+	//If there's no expr1
+	if(lexer.peek() == Lexer::TIMES){
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}
+	//Searching the TIMES
+	while(lexer.peek() != Lexer::TIMES){
+		checkSyntax();
+	}
+  	//Check TIMES
+  	if(lexer.peek() != Lexer::TIMES)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	
+	lexer.next(); //Ignore the TIMES
+
+	//If there's no expr2
+	if(lexer.peek() == Lexer::CLOSE_PAR){
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}
+
+	// checks if product ends with CLOSE_PAR
+	while(lexer.peek() != Lexer::CLOSE_PAR){
+		checkSyntax();
+	}
+	//if not found
+	if(lexer.peek() != Lexer::CLOSE_PAR)
+  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+
+  	lexer.next();//Ignore the CLOSE_PAR
+
+  	//If the container is empty (not enough CLOSE_PAR) OR
+  	// the size of the container is 1 (no OPEN_PAR) 
+  	// and there is still one CLOSE_PAR left
+  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	}else{
+		openParLocations.pop_back();
+	}
+}
 
 
 
