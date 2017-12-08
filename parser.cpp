@@ -25,7 +25,7 @@ using std::cin;
 
  
 int main (){
-  std::string input = "sin(pi * sin(pi * x))";
+  std::string input = "sin(pi * x))";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
 
@@ -163,7 +163,7 @@ Parser::Parser(std::istream& inputStream): lexer(inputStream){};
 
 
 bool Parser::parse(Exp& exp){
-	//Phase 1
+	/*//Phase 1
 	std::vector<Lexer::token> tokenVector;
 	while(!lexer.in.eof()){
 		tokenVector.push_back(lexer.next());
@@ -173,12 +173,12 @@ bool Parser::parse(Exp& exp){
   		std::cout << tokenToText[*it] << " " << lexer.count()<< endl;
   		++it;
 	}
-
+	*/
 	//Phase 2 - SYNTAX
 	checkSyntax();
 }
 
-void checkSyntax() {
+void Parser::checkSyntax() {
 
 	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
 
@@ -212,11 +212,20 @@ void checkSyntax() {
 		//If not found
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
-	  	//If found; we pop the last parenthesis
-	  	openParLocations.pop_back();
+	  	
+	  	lexer.next(); //Ignore token
 
+	  	//If the container is empty (not enough CLOSE_PAR) OR
+	  	// the size of the container is 1 and there is still one CLOSE_PAR left
+	  	// 
+	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+  			throw std::domain_error("PARSE ERROR at " + lexer.count());
+  		}else{
+	  		openParLocations.pop_back();
+  		}
 
 	}
+	
 
 	//Check AVG
 	else if(lexer.peek() == Lexer::AVG){
@@ -247,15 +256,15 @@ void checkSyntax() {
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-	  	lexer.next();
+	  	lexer.next(); //Ignore the CLOSE_PAR
 
-	  	//If found we pop the last parenthesis
-	  	if(!openParLocations.empty()){
-	  		openParLocations.pop_back();
-
-  		//There is one closing parentheses that is too much
+	  	//If the container is empty (not enough CLOSE_PAR) OR
+	  	// the size of the container is 1 and there is still one CLOSE_PAR left
+	  	// 
+	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+  			throw std::domain_error("PARSE ERROR at " + lexer.count());
   		}else{
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	  		openParLocations.pop_back();
   		}
 
 	}
@@ -282,17 +291,18 @@ void checkSyntax() {
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
 
-	  	lexer.next();
+	  	lexer.next();//Ignore the CLOSE_PAR
 
-	  	//If found we pop the last parenthesis
-	  	if(!openParLocations.empty()){
-	  		openParLocations.pop_back();
-
-  		//There is one closing parentheses that is too much
+	  	//If the container is empty (not enough CLOSE_PAR) OR
+	  	// the size of the container is 1 and there is still one CLOSE_PAR left
+	  	// 
+	  	if(openParLocations.empty() || (openParLocations.size() == 1 && lexer.peek() == Lexer::CLOSE_PAR)){
+  			throw std::domain_error("PARSE ERROR at " + lexer.count());
   		}else{
-	  		throw std::domain_error("PARSE ERROR at " + lexer.count());
+	  		openParLocations.pop_back();
   		}
-	
+  		
+
 	//Check X/Y
 	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
 		lexer.next();

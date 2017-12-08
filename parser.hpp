@@ -45,11 +45,12 @@ class Parser {
 	std::vector<std::streamoff> openParLocations;
 
  	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", ","};
- 	void checkAverage(Exp& exp,Exp& operatorStack);
- 	void checkProduct(Exp& exp,Exp& operatorStack);
- 	void checkSinCos(Exp& exp,Exp& operatorStack);
- 	void checkXY(Exp& exp,Exp& operatorStack);
+ 	void checkAverage();
+ 	void checkProduct();
+ 	void checkSinCos();
+ 	void checkXY();
  	void infixToRPN(Exp& exp, Lexer::token,Exp& operatorStack); //maybe reference for token, need to think
+ 	void checkSyntax();
 };
 
 
