@@ -5,3 +5,5 @@ Faire attention à :
 	La virgule au milieu de AVG
 	Le "(pi*" au début du sinus/cosinus
 	Expressions incomplètes (du style sin(pi * ) )
+	Checker sin(pi**
+	Faire attention à l'ordre des opérations

@@ -1,0 +1,25 @@
+Sat Dec  9 15:29:53 UTC 2017
+Untaring InfixToRPN_CRASSET.tar.gz... Success !
+Now executing gcc... Crossing fingers !
+parser_d.cpp: In function 'int main(int, char**)':
+parser_d.cpp:483:20: error: conflicting declaration of C function 'int main(int, char**)'
+ int main(int,char**) {return 0;};
+                    ^
+parser_d.cpp:28:5: note: previous declaration 'int main()'
+ int main (){
+     ^
+parser_d.cpp: In member function 'Lexer::token Lexer::peek()':
+parser_d.cpp:81:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+parser_d.cpp: In member function 'Lexer::token Lexer::identifyToken(std::__cxx11::string)':
+parser_d.cpp:122:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+Compilation successful ! You won't get 0 !
+Yihaaa. Now let's start the tests... 
+
+---
+
+Test 0 : running the program, without doing anything... Failed ! We're stopping the tests here because something is reallllyyyy wrong. You won't get further.
+

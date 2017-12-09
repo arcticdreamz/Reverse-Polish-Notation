@@ -2,7 +2,6 @@
 #define _PARSER_H
 #include <string>
 #include <vector>
-#include <ios>
 #include <iostream>
 #include <sstream>
 #include <fstream>
@@ -41,16 +40,15 @@ class Parser {
 
 	private:
     Lexer lexer;
- 	Exp operatorStack;
 	std::vector<std::streamoff> openParLocations;
+	std::vector<Lexer::token> tokenVector;
 
  	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", ","};
  	bool checkSyntax();
- 	void checkAverage();
- 	void checkProduct();
- 	void checkSinCos();
- 	void checkXY();
- 	void infixToRPN(Exp& exp, Lexer::token,Exp& operatorStack); //maybe reference for token, need to think
+ 	bool checkAverage();
+ 	bool checkProduct();
+ 	bool checkSinCos();
+ 	bool infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector); 
 
 };
 
