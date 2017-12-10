@@ -7,3 +7,8 @@ Faire attention à :
 	Expressions incomplètes (du style sin(pi * ) )
 	Checker sin(pi**
 	Faire attention à l'ordre des opérations
+	sin(pi*x)cos(pi*x)
+	exp1*exp2)
+
+
+	pi pi pi x * cos * sin x x * + 2 / * cos

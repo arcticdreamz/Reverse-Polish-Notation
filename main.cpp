@@ -24,9 +24,19 @@ using std::cin;
 
 
 int main (){
-  std::string input = "(sin(pi*y)";
+  std::string input = "   ( x *y )   ";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
+  /*
+  std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
+  Lexer::token tok;
+  Lexer lexer(is);
+  while(lexer.peek() != std::char_traits<char>::eof()){
+  tok = lexer.next();
+    std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
+  }
+  */
+
  
   Parser parser(is);
   Exp expression;
@@ -36,6 +46,12 @@ int main (){
   std::cout<<"expression =";
   for(auto it= expression.begin(); it != expression.end();++it)
     std::cout<<" "<<*it;
+  
 
+
+
+
+
+  
   return 0;
 }

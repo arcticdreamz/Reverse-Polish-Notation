@@ -43,7 +43,7 @@ class Parser {
 	std::vector<std::streamoff> openParLocations;
 	std::vector<Lexer::token> tokenVector;
 
- 	std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", ","};
+ 	const std::string tokenToText[10] = {"x", "y", "sin", "cos", "pi", "(", ")", "*", "AVG", ","};
  	bool checkSyntax();
  	bool checkAverage();
  	bool checkProduct();
