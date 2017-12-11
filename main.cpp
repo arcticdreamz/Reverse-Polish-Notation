@@ -24,7 +24,7 @@ using std::cin;
 
 
 int main (){
-  std::string input = "(sin(pi*x)qq*cos(pi*y))";
+  std::string input = "(sin(pi*avg(x,y))*x)";
 
   int i;
   std::cout<< "Do you want to input yourself(1) or take the main expression(2) :";

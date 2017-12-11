@@ -81,6 +81,7 @@ std::string Lexer::extractString(){
 	char c;
 	string s = "";
 
+	//in>>std::ws;
 
 	c = in.get();
 	//check for EOF
@@ -133,15 +134,16 @@ Parser::Parser(std::istream& inputStream): lexer(inputStream){}
 
 bool Parser::parse(Exp& exp){
 
+	exp.clear();
 	//Phase 1 - SYNTAX
-/*	if(!checkSyntax()){
+	if(!checkSyntax()){
 		return false;
 	}
-*/
-	return checkSyntax();
+
+	//return checkSyntax();
 		
 	//Phase 2 -- INFIX TO RPN
-	//return infixToRPN(exp,tokenVector);
+	return infixToRPN(exp,tokenVector);
 }
 
 
@@ -164,6 +166,8 @@ bool Parser::checkSyntax() { //Will never throw because I do peek() in the calli
 	}else if(lexer.peek()  == Lexer::X || lexer.peek() == Lexer::Y){
 		if(!checkXY())
 			return false;	
+	}else{
+		return false;
 	}
 
 	return true;
@@ -468,7 +472,7 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 			//(Same method as if the one for the other operators)
 			if(std::find(avgPar.begin(), avgPar.end(), parentheses) != avgPar.end()){
 
-				exp.push_back("+2/");
+				exp.push_back("+ 2 /");
 			}
 			
 
@@ -500,11 +504,15 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 	//Managing the "enter"
 	auto it = exp.begin() + 1;
 	//Error thrown here ?
-	while(it != exp.end()){
+	/*
+	
+	 while(it != exp.end()){
 		if(*it == "2" || *it =="x" || *it =="y" || *it == "pi")
 			if(*(it-1) == "2" || *(it-1) =="x" || *(it-1) =="y"|| *(it-1) == "pi")
 				exp.insert(it,"enter");
 		++it;
 	}
+
+	*/
 	return true;
 }
