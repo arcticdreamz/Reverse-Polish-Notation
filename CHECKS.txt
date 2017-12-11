@@ -12,3 +12,10 @@ Faire attention à :
 
 
 	pi pi pi x * cos * sin x x * + 2 / * cos
+
+
+et moi en gros : dans mon ckeck syntaxe je prend le premier token qui est le seul
+ a pouvoir renvoyer un EOI valable puis je regarde si j'ai déjà checker la syntaxe
+ si oui c'est que apres mon expression y en encore des truc du coup de throw une parse erreur,
+ puis apres dans un bloc try je fais toute mes conditions et dans le catch correspondant je regarde 
+si j'ai une EOI c'est que mon expression est incomplète du coup je throw une parse sinon je refais juste remonter l'erreur

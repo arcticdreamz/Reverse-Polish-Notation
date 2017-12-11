@@ -24,7 +24,9 @@ using std::cin;
 
 
 int main (){
-  std::string input = "   ( x *y )   ";
+  //std::string input = "   ( x *y )   ";
+  
+  std::string input = "sin(pi* ";
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
   /*
@@ -52,6 +54,6 @@ int main (){
 
 
 
-  
+
   return 0;
 }
