@@ -221,11 +221,9 @@ bool Parser::checkSinCos(){
 	  		return false;
 		}
 
-	  	//Searching for CLOSE_PAR
-		while(lexer.peek() != Lexer::CLOSE_PAR){
+	  	//Searching for CLOSE_PAR, checking expr1
 			if(!checkSyntax())
-				return false;
-		}	
+				return false;	
 		
 		//If not found
 		if(lexer.peek() != Lexer::CLOSE_PAR)
@@ -288,10 +286,8 @@ bool Parser::checkAverage(){
 		}
 
 		//Searching the COMMA, checking expr1
-		while(lexer.peek() != Lexer::COMMA){
-			if(!checkSyntax())
-				return false;
-		}
+		if(!checkSyntax())
+			return false;
 
 		//Check COMMA
 	  	if(lexer.peek() != Lexer::COMMA)
@@ -303,11 +299,11 @@ bool Parser::checkAverage(){
 		if(lexer.peek() == Lexer::CLOSE_PAR){
 	  		return false;
 		}
+
 		//Check expr2
-		while(lexer.peek() != Lexer::CLOSE_PAR){
-			if(!checkSyntax())
-				return false;
-		}
+		if(!checkSyntax())
+			return false;
+	
 
 		// checks if AVG ends with CLOSE_PAR
 		if(lexer.peek() != Lexer::CLOSE_PAR)
@@ -367,10 +363,9 @@ bool Parser::checkProduct(){
 	  		return false;
 		}
 		//Searching the TIMES
-		while(lexer.peek() != Lexer::TIMES){
-			if(!checkSyntax())
+		if(!checkSyntax())
 				return false;
-		}
+		
 	  	//Check TIMES
 	  	if(lexer.peek() != Lexer::TIMES)
 	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
@@ -383,10 +378,9 @@ bool Parser::checkProduct(){
 		}
 
 		// checks if product ends with CLOSE_PAR
-		while(lexer.peek() != Lexer::CLOSE_PAR){
-			if(!checkSyntax())
-				return false;
-		}
+		if(!checkSyntax())
+			return false;
+
 		//if not found
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
