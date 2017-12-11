@@ -443,8 +443,14 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
  	while(tok != tokenVector.end()){
 
 		if(*tok == Lexer::PI || *tok == Lexer::X || *tok == Lexer::Y){
+			//Pushback enter
+			if(!exp.empty()){
+				if(exp.back() == "x" || exp.back() =="y"|| exp.back() == "pi")
+					exp.push_back("enter");
+			}
 			//Push the token onto the expression
 			exp.push_back(tokenToText[*tok]);
+
 		}
 		else if(*tok == Lexer::AVG){
 			//Remember the number of parentheses
@@ -500,18 +506,5 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 		operatorStack.pop_back();
 	}
 
-	//Managing the "enter"
-	auto it = exp.begin() + 1;
-	//Error thrown here ?
-	/*
-	
-	 while(it != exp.end()){
-		if(*it == "2" || *it =="x" || *it =="y" || *it == "pi")
-			if(*(it-1) == "2" || *(it-1) =="x" || *(it-1) =="y"|| *(it-1) == "pi")
-				exp.insert(it,"enter");
-		++it;
-	}
-
-	*/
 	return true;
 }
