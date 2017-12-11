@@ -48,6 +48,7 @@ class Parser {
  	bool checkAverage();
  	bool checkProduct();
  	bool checkSinCos();
+ 	bool checkXY();
  	bool infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector); 
 
 };

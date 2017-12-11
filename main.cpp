@@ -24,7 +24,7 @@ using std::cin;
 
 
 int main (){
-  std::string input = "sin(pi*x) ";
+  std::string input = "(sin(pi*x)qq*cos(pi*y))";
 
   int i;
   std::cout<< "Do you want to input yourself(1) or take the main expression(2) :";
@@ -40,12 +40,14 @@ int main (){
   std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
   Lexer::token tok;
   Lexer lexer(is);
+  lexer.peek();
+  lexer.peek();
+  lexer.peek();
   while(lexer.peek() != std::char_traits<char>::eof()){
   tok = lexer.next();
     std::cout << tokenToText[tok] << " " << lexer.count()<< endl;
-  }
-  */
-
+  }*/
+  
  
   Parser parser(is);
   Exp expression;
