@@ -24,9 +24,16 @@ using std::cin;
 
 
 int main (){
-  //std::string input = "   ( x *y )   ";
-  
-  std::string input = "sin(pi* ";
+  std::string input = "sin(pi*x) ";
+
+  int i;
+  std::cout<< "Do you want to input yourself(1) or take the main expression(2) :";
+  std::cin>> i; 
+  if(i == 1) {
+    std::cout<< "Your input :";
+    std::cin>> input;
+  }
+
   std::istringstream is(input);
   std::cout<<"STR ="<<input<<'\n';
   /*

@@ -151,7 +151,7 @@ bool Parser::parse(Exp& exp){
 }
 
 
-bool Parser::checkSyntax() {
+bool Parser::checkSyntax() { //Will never throw because I do peek() in the calling function
 
 	bool syntaxOK = false;
 
@@ -179,50 +179,57 @@ bool Parser::checkSinCos(){
 
 	tokenVector.push_back(lexer.next());
 
-	//Check if OPEN_PAR follows SIN/COS
-	if(lexer.peek() != Lexer::OPEN_PAR)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	try{
+		//Check if OPEN_PAR follows SIN/COS
+		if(lexer.peek() != Lexer::OPEN_PAR)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 
-  	tokenVector.push_back(lexer.next()); //Take token
+	  	tokenVector.push_back(lexer.next()); //Take token
 
-  	//Remember the position of the OPEN_PAR
-  	openParLocations.push_back(lexer.count());
+	  	//Remember the position of the OPEN_PAR
+	  	openParLocations.push_back(lexer.count());
 
-  	//Check that pi is the left hand operand in SIN/COS
-  	if(lexer.peek() != Lexer::PI)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	  	//Check that pi is the left hand operand in SIN/COS
+	  	if(lexer.peek() != Lexer::PI)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 
-  	tokenVector.push_back(lexer.next()); //Take token
+	  	tokenVector.push_back(lexer.next()); //Take token
 
-	//Check if TIMES follows PI
-  	if(lexer.peek() != Lexer::TIMES)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		//Check if TIMES follows PI
+	  	if(lexer.peek() != Lexer::TIMES)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 
-  	tokenVector.push_back(lexer.next()); //Take token
+	  	tokenVector.push_back(lexer.next()); //Take token
 
-	//If there's no expr1
-	if(lexer.peek() == Lexer::CLOSE_PAR){
-  		return false;
-	}
+		//If there's no expr1
+		if(lexer.peek() == Lexer::CLOSE_PAR){
+	  		return false;
+		}
 
-  	//Searching for CLOSE_PAR
-	while(lexer.peek() != Lexer::CLOSE_PAR){
-		if(!checkSyntax())
-			return false;
-	}
+	  	//Searching for CLOSE_PAR
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			if(!checkSyntax())
+				return false;
+		}	
+		
+		//If not found
+		if(lexer.peek() != Lexer::CLOSE_PAR)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	  	
+	  	tokenVector.push_back(lexer.next()); //Take token
 
-	//If not found
-	if(lexer.peek() != Lexer::CLOSE_PAR)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-  	
-  	tokenVector.push_back(lexer.next()); //Take token
+	  	//If the container is empty (not enough CLOSE_PAR)
+	  	if(openParLocations.empty())
+				throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		else
+			openParLocations.pop_back();
 
-  	//If the container is empty (not enough CLOSE_PAR)
-  	if(openParLocations.empty())
+		// IF "EOI", there syntax was wrong(things were missing)
+		// If PARSE_ERROR, the same --> We transform an EOI into PARSE_ERROR
+	}catch(std::domain_error& e){
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	else
-		openParLocations.pop_back();
-	
+	}
+
   	// the container is empty (no OPEN_PAR) 
   	// and there is still one CLOSE_PAR left
 	try{
@@ -230,7 +237,7 @@ bool Parser::checkSinCos(){
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}catch(std::domain_error& e){
 		std::string error(e.what());
-		if(error !="EOI")
+		if(error !="EOI") //ELSE, that means that the expression is correct
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}
 
@@ -240,54 +247,61 @@ bool Parser::checkAverage(){
 	
 	tokenVector.push_back(lexer.next()); //Take token AVG
 
-	//Check if OPEN_PAR follows avg
-  	if(lexer.peek() != Lexer::OPEN_PAR)
-		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	
-  	tokenVector.push_back(lexer.next()); //Take token OPEN_PAR
-  	
-  	//Remember the position of the OPEN_PAR
-  	openParLocations.push_back(lexer.count());
+	try{
 
-	//If there's no expr1
-	if(lexer.peek() == Lexer::COMMA){
-  		return false;
-	}
-
-	//Searching the COMMA
-	while(lexer.peek() != Lexer::COMMA){
-		if(!checkSyntax())
-			return false;
-	}
-
-	//Check COMMA
-  	if(lexer.peek() != Lexer::COMMA)
-		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-
-	tokenVector.push_back(lexer.next()); //Take the token
-
-	//If there's no expr2
-	if(lexer.peek() == Lexer::CLOSE_PAR){
-  		return false;
-	}
-
-	while(lexer.peek() != Lexer::CLOSE_PAR){
-		if(!checkSyntax())
-			return false;
-	}
-
-	// checks if AVG ends with CLOSE_PAR
-	if(lexer.peek() != Lexer::CLOSE_PAR)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-
-  	tokenVector.push_back(lexer.next()); //Take the CLOSE_PAR
-
-
-  	//If the container is empty (not enough OPEN_PAR) OR
-  	if(openParLocations.empty())
+		//Check if OPEN_PAR follows avg
+	  	if(lexer.peek() != Lexer::OPEN_PAR)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	else
-		openParLocations.pop_back();
+		
+	  	tokenVector.push_back(lexer.next()); //Take token OPEN_PAR
+	  	
+	  	//Remember the position of the OPEN_PAR
+	  	openParLocations.push_back(lexer.count());
+
+		//If there's no expr1
+		if(lexer.peek() == Lexer::COMMA){
+	  		return false;
+		}
+
+		//Searching the COMMA
+		while(lexer.peek() != Lexer::COMMA){
+			if(!checkSyntax())
+				return false;
+		}
+
+		//Check COMMA
+	  	if(lexer.peek() != Lexer::COMMA)
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+
+		tokenVector.push_back(lexer.next()); //Take the token
+
+		//If there's no expr2
+		if(lexer.peek() == Lexer::CLOSE_PAR){
+	  		return false;
+		}
+
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			if(!checkSyntax())
+				return false;
+		}
+
+		// checks if AVG ends with CLOSE_PAR
+		if(lexer.peek() != Lexer::CLOSE_PAR)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+
+	  	tokenVector.push_back(lexer.next()); //Take the CLOSE_PAR
+
+
+	  	//If the container is empty (not enough OPEN_PAR) OR
+	  	if(openParLocations.empty())
+				throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		else
+			openParLocations.pop_back();
+		// IF "EOI", the syntax was wrong(things were missing)
+		// If PARSE_ERROR, the same --> We transform an EOI into PARSE_ERROR
+	}catch(std::domain_error& e){
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	}
 	
   	// the container is emty (no OPEN_PAR) 
   	// and there is still one CLOSE_PAR left
@@ -296,7 +310,7 @@ bool Parser::checkAverage(){
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}catch(std::domain_error& e){
 		std::string error(e.what());
-		if(error !="EOI")
+		if(error !="EOI") //ELSE, that means that the expression is correct
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}
 
@@ -311,43 +325,51 @@ bool Parser::checkProduct(){
   	//Remember the position of the OPEN_PAR
   	openParLocations.push_back(lexer.count());
 
-	//If there's no expr1
-	if(lexer.peek() == Lexer::TIMES){
-  		return false;
-	}
-	//Searching the TIMES
-	while(lexer.peek() != Lexer::TIMES){
-		if(!checkSyntax())
-			return false;
-	}
-  	//Check TIMES
-  	if(lexer.peek() != Lexer::TIMES)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+  	try{
+
+		//If there's no expr1
+		if(lexer.peek() == Lexer::TIMES){
+	  		return false;
+		}
+		//Searching the TIMES
+		while(lexer.peek() != Lexer::TIMES){
+			if(!checkSyntax())
+				return false;
+		}
+	  	//Check TIMES
+	  	if(lexer.peek() != Lexer::TIMES)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		
+		tokenVector.push_back(lexer.next()); //Take the TIMES
+
+		//If there's no expr2
+		if(lexer.peek() == Lexer::CLOSE_PAR){
+	  		return false;
+		}
+
+		// checks if product ends with CLOSE_PAR
+		while(lexer.peek() != Lexer::CLOSE_PAR){
+			if(!checkSyntax())
+				return false;
+		}
+		//if not found
+		if(lexer.peek() != Lexer::CLOSE_PAR)
+	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+
+	  	tokenVector.push_back(lexer.next());//Take the CLOSE_PAR
+
+	  	//If the container is empty (not enough CLOSE_PAR) OR
+	  	if(openParLocations.empty())
+				throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		else
+			openParLocations.pop_back();
 	
-	tokenVector.push_back(lexer.next()); //Take the TIMES
-
-	//If there's no expr2
-	if(lexer.peek() == Lexer::CLOSE_PAR){
-  		return false;
-	}
-
-	// checks if product ends with CLOSE_PAR
-	while(lexer.peek() != Lexer::CLOSE_PAR){
-		if(!checkSyntax())
-			return false;
-	}
-	//if not found
-	if(lexer.peek() != Lexer::CLOSE_PAR)
-  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-
-  	tokenVector.push_back(lexer.next());//Take the CLOSE_PAR
-
-  	//If the container is empty (not enough CLOSE_PAR) OR
-  	if(openParLocations.empty())
+	// IF "EOI", the syntax was wrong(things were missing)
+	// If PARSE_ERROR, the same --> We transform an EOI into PARSE_ERROR
+	}catch(std::domain_error& e){
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	else
-		openParLocations.pop_back();
-	
+	}
+
   	// the container is empty (no OPEN_PAR) 
   	// and there is still one CLOSE_PAR left
 	try{
@@ -358,7 +380,6 @@ bool Parser::checkProduct(){
 		if(error !="EOI")
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}
-
 
 	return true;
 }
