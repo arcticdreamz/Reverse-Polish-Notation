@@ -450,6 +450,9 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 			//Remember the number of parentheses
 			avgPar.push_back(parentheses);
 		}
+		else if(*tok == Lexer::COMMA){
+			//Do nothing
+		}
 		else if(*tok == Lexer::OPEN_PAR){
 			parentheses++;
 			operatorStack.push_back(tokenToText[*tok]);
@@ -480,16 +483,12 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 		}else{
 			//We pop the other operators from the stack until empty or until
 			//we encounter OPEN_PAR or "+" (because smaller precedence)
-			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR] && operatorStack.back() != "+"){
+			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
 				exp.push_back(operatorStack.back());
 				operatorStack.pop_back();
 			}
 			//Push the read operator onto the operator stack
-			if(*tok == Lexer::COMMA){
-				operatorStack.push_back("+");
-			}else{
 			operatorStack.push_back(tokenToText[*tok]);
-			}
 		}
 
 		++tok;
