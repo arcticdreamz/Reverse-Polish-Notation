@@ -19,9 +19,7 @@ Lexer::Lexer(std::istream& inputStream) : in(inputStream),counter(0){}
 Lexer::token Lexer::next() {
 	in.seekg(count()); //Go to the current position
 	string s = extractString();
-	while(count() < in.tellg())
-		counter++;
-
+	counter = in.tellg();
 	return identifyToken(s);
 }
 
