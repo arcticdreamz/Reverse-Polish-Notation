@@ -24,8 +24,8 @@ using std::cin;
 
 
 int main (){
-  //std::string input = "(cos(pi*((x*cos(pi*cos(pi*avg(avg((x*x),sin(pi*x)),((avg(x,((avg(x,cos(pi*y))*y)*x))*(y*cos(pi*y)))*(cos(pi*avg((y*avg(x,x)),y))*avg(sin(pi*cos(pi*y)),cos(pi*sin(pi*(cos(pi*avg(y,y))*x))))))))))*(cos(pi*avg(avg(y,avg(x,x)),avg(x,(x*y))))*sin(pi*sin(pi*sin(pi*sin(pi*(x*x))))))))*avg((avg(y,y)*cos(pi*avg(sin(pi*sin(pi*sin(pi*y))),sin(pi*avg(y,y))))),sin(pi*(cos(pi*(cos(pi*y)*cos(pi*y)))*cos(pi*(sin(pi*cos(pi*cos(pi*avg(avg((sin(pi*(y*y))*y),avg(x,y)),sin(pi*cos(pi*sin(pi*(cos(pi*avg(y,y))*y))))))))*sin(pi*sin(pi*sin(pi*cos(pi*avg(sin(pi*x),sin(pi*sin(pi*avg(sin(pi*((y*x)*x)),(sin(pi*(avg(avg(y,y),(avg(y,y)*sin(pi*y)))*x))*sin(pi*(y*x)))))))))))))))))";
-  std::string input = "sin(pi*x";
+  //std::string input = "(   cos(    pi*((x*   cos(pi*cos(pi*avg(avg((x*x),sin(pi*x)),((avg(x,((avg(x,cos(pi*y))*y)*x))*(y*cos(pi*y)))*(cos(pi*avg((y*avg(x,x)),y))*avg(sin(pi*cos(pi*y)),cos(pi*sin(pi*(cos(pi*avg(y,y))*x))))))))))*(cos(pi*avg(avg(y,avg(x,x)),avg(x,(x*y))))*sin(pi*sin(pi*sin(pi*sin(pi*(x*x))))))))*avg((avg(y,y)*cos(pi*avg(sin(pi*sin(pi*sin(pi*y))),sin(pi*avg(y,y))))),sin(pi*(cos(pi*(cos(pi*y)*cos(pi*y)))*cos(pi*(sin(pi*cos(pi*cos(pi*avg(avg((sin(pi*(y*y))*y),avg(x,y)),sin(pi*cos(pi*sin(pi*(cos(pi*avg(y,y))*y))))))))*sin(pi*sin(pi*sin(pi*cos(pi*avg(sin(pi*x),sin(pi*sin(pi*avg(sin(pi*((y*x)*x)),(sin(pi*(avg(avg(y,y),(avg(y,y)*sin(pi*y)))*x))*sin(pi*(y*x)))))))))))))))))";
+  std::string input = "x";
   int i;
   std::cout<< "Do you want to input yourself(1) or take the main expression(2) :";
   std::cin>> i; 

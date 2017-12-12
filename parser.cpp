@@ -6,7 +6,6 @@
 #include <stdexcept> //domain_error
 #include <cctype> //isspace
 
-using std::string;
 using std::endl;
 using std::cout;
 using std::vector;
@@ -18,7 +17,7 @@ Lexer::Lexer(std::istream& inputStream) : in(inputStream),counter(0){}
 
 Lexer::token Lexer::next() {
 	in.seekg(count()); //Go to the current position
-	string s = extractString();
+	const std::string s = extractString();
 	while(count() < in.tellg())
 		counter++;
 
@@ -27,7 +26,7 @@ Lexer::token Lexer::next() {
 
 Lexer::token Lexer::peek(){
 	in.seekg(count()); //Go to the current position
-	string s = extractString();
+	const std::string s = extractString();
 	in.seekg(count()); //Go back to where we were before extracting the string
 	in.clear(); //Clears the eofbit if lexer.peek() reached eof
 
@@ -43,7 +42,7 @@ void Lexer::reset(){
 }
 
 
-Lexer::token Lexer::identifyToken(const string s) {
+Lexer::token Lexer::identifyToken(const std::string s) {
 	if(s == "x")
 		return Lexer::X;
 
@@ -76,10 +75,10 @@ Lexer::token Lexer::identifyToken(const string s) {
 }
 
 std::string Lexer::extractString(){
-	const string sensitive_chars = "sincospiavg";
-	const string single_char = "xy()*,";
+	const std::string sensitive_chars = "sincospiavg";
+	const std::string single_char = "xy()*,";
 	char c;
-	string s = "";
+	std::string s = "";
 
 
 	c = in.get();
@@ -87,25 +86,27 @@ std::string Lexer::extractString(){
 	if(c == std::char_traits<char>::eof())
 		throw std::domain_error("EOI");
 	
+	//Ignore whitespace
 	while(isspace(c)) {
  		c = in.get();
  		if(c == std::char_traits<char>::eof())
   			throw std::domain_error("EOI");
   	}
-
+	//Add c to string
 	s.push_back(c);
+
 	//Check if "xy()*,"
-	if(single_char.find(c) != string::npos)
+	if(single_char.find(c) != std::string::npos)
 		return s;
 	
 
 	//Check if "sin", "cos", "pi" or "avg"
-	else if(sensitive_chars.find(c) != string::npos){
+	else if(sensitive_chars.find(c) != std::string::npos){
 		while(true) {
 			c = in.get();
 			if(c == std::char_traits<char>::eof()) //Check for end of file
 				break;
-			else if(sensitive_chars.find(c) != string::npos)
+			else if(sensitive_chars.find(c) != std::string::npos)
                 s.push_back(c);
 			else {
 				in.unget();// We read a character that's not sensitive
@@ -116,7 +117,7 @@ std::string Lexer::extractString(){
 		if(s == "sin" || s == "cos" || s == "avg" || s == "pi")
 			return s; 
 		else if(c == std::char_traits<char>::eof())
-			throw std::domain_error("BAD TOKEN: " + s);	//throw std::domain_error("EOI");
+			throw std::domain_error("BAD TOKEN: " + s);	
 		else
 			throw std::domain_error("BAD TOKEN: " + s);
 	}
@@ -140,7 +141,7 @@ bool Parser::parse(Exp& exp){
 }
 
 
-bool Parser::checkSyntax() { //Will never throw because I do peek() in the calling function
+bool Parser::checkSyntax() {
 
 	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
 		if(!checkSinCos())
@@ -402,7 +403,7 @@ bool Parser::checkProduct(){
 
 
 
-bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
+bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 
  	Exp operatorStack;
  	
@@ -451,8 +452,9 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 			//If parentheses is the same as one of avgPar, we must add "+2/"
 			//(Same method as if the one for the other operators)
 			if(std::find(avgPar.begin(), avgPar.end(), parentheses) != avgPar.end()){
-
-				exp.push_back("+ 2 /");
+				exp.push_back("+");
+				exp.push_back("2");
+				exp.push_back("/");
 			}
 			
 

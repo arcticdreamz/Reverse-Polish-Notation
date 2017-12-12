@@ -1,0 +1,17 @@
+Tue Dec 12 23:08:24 UTC 2017
+Untaring InfixToRPN_CRASSET.tar.gz... Success !
+Now executing gcc... Crossing fingers !
+Compilation successful ! You won't get 0 !
+Yihaaa. Now let's start the tests... 
+
+---
+
+Test 0 : running the program, without doing anything... OK !
+---
+
+Test 1 : simple (x * y)... OK!
+Test 2 : Lexical error (x + y)... OK (error was raised by Lexer) !
+Test 3 : Parser error... OK (error was raised by Lexer) !
+Test 4 : More complex... OK!
+Test 5 : More complex with on purpose error... OK (error was raised by Lexer) !
+Test 6 : Very complex... Error while processing RPN output
