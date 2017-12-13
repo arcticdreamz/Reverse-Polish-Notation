@@ -173,7 +173,7 @@ bool Parser::checkXY(){
 
 	//After X or Y , there can only be "*)," or EOF
 	try{	
-		if(lexer.count() == 1){ //We have X or Y alone
+		if(tokenVector.size() == 1){ //We have X or Y alone
 			lexer.peek(); //If this doesn't throw, we are not EOI so there is a TOKEN AFTER X/Y
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 		}
@@ -184,7 +184,7 @@ bool Parser::checkXY(){
 	std::string error(e.what());
 	if(error !="EOI") //ELSE, that means that the expression is correct
 		throw;
-	else if(lexer.count() != 1) //Throw parse error if X/Y is not by itself
+	else if(tokenVector.size() != 1) //Throw parse error if X/Y is not by itself
 		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	
 	}
@@ -407,6 +407,8 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 
  	Exp operatorStack;
  	
+ 	exp.clear();
+
  	//Variables to keep track of the parentheses for AVG
  	int parentheses = 0;
  	std::vector<int> avgPar;
@@ -439,7 +441,7 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 			parentheses--;
 
 			//Pop the operators onto the queue as long as
-			//we don't encounter a OPEN_PAR
+			//we don't encounter an OPEN_PAR
 			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
 				exp.push_back(operatorStack.back());
 				operatorStack.pop_back();
