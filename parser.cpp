@@ -248,11 +248,7 @@ bool Parser::checkSinCos(){
   		//After the closing parenthesis of SIN/COS, there can only be "*,)"
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	
-		//If there is a TIMES but there is no open parentheses in that block
-		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
-			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-		
+
 
 	}catch(std::domain_error& e){
 		std::string error(e.what());
@@ -323,9 +319,7 @@ bool Parser::checkAverage(){
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));	
 
-		//If there is a TIMES but there is no open parentheses in that block
-		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
-			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	
 		
 	}catch(std::domain_error& e){		
 		std::string error(e.what());
@@ -386,11 +380,6 @@ bool Parser::checkProduct(){
   		//After the closing parenthesis there can only be "*,)"
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-
-		//If there is a TIMES but there is no open parentheses in that block
-		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
-			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-		
 
 	}catch(std::domain_error& e){
 		std::string error(e.what());
@@ -460,10 +449,10 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 			}
 			
 
-		//For operators
+		//For operators (SIN,COS,TIMES)
 		}else{
 			//We pop the other operators from the stack until empty or until
-			//we encounter OPEN_PAR or "+" (because smaller precedence)
+			//we encounter OPEN_PAR 
 			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
 				exp.push_back(operatorStack.back());
 				operatorStack.pop_back();
