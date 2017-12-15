@@ -472,7 +472,6 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 			//If parentheses is the same as one of avgPar, we must add "+2/"
 			//(Same method as if the one for the other operators)
 			if(std::find(avgPar.begin(), avgPar.end(), parentheses) != avgPar.end()){
-
 				exp.push_back("+ 2 /");
 			}
 			
