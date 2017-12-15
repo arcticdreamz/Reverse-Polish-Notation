@@ -48,7 +48,7 @@ class Parser {
  	bool checkSinCos();
  	bool checkXY();
  	bool infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector); 
-
+	bool checkPrecedence(const Lexer::token tok, const std::string s);
 };
 
 

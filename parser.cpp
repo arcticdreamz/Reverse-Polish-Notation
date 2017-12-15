@@ -132,7 +132,19 @@ std::string Lexer::extractString(){
 Parser::Parser(std::istream& inputStream): lexer(inputStream){}
 
 
+bool Parser::checkPrecedence(const Lexer::token tok, const std::string s){
+	if(tok == Lexer::TIMES && ( s == "sin" || s == "cos" || s == "*"))
+		return true;
+	else if((tok == Lexer::SIN || tok == Lexer::COS) && (s == "sin" || s == "cos"))
+		return true;
+	else
+		return false;
+}
+
+
+
 bool Parser::parse(Exp& exp){
+	//Phase 1 -- Check Syntax
 	if(!checkSyntax())
 		return false;
 				
@@ -443,27 +455,26 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 			//If parentheses is the same as one of avgPar, we must add "+2/"
 			//(Same method as if the one for the other operators)
 			if(std::find(avgPar.begin(), avgPar.end(), parentheses) != avgPar.end()){
-<<<<<<< HEAD
-				exp.push_back("+ 2 /");
-=======
+
 				exp.push_back("+");
 				exp.push_back("2");
 				exp.push_back("/");
->>>>>>> f96b75aed0b2483796e6d83cc01879c0c605e97c
 			}
 			
 
 		//For operators (SIN,COS,TIMES)
 		}else{
-			//We pop the other operators from the stack until empty or until
-			//we encounter OPEN_PAR 
-			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
-				exp.push_back(operatorStack.back());
-				operatorStack.pop_back();
+			//We pop the other operators from the stack until empty or greater precedence
+			if(!operatorStack.empty()){
+				while(checkPrecedence(*tok,operatorStack.back())){
+					exp.push_back(operatorStack.back());
+					operatorStack.pop_back();
+
+					if(operatorStack.empty())
+						break;
+				}
 			}
-			//Pop the (eventual) OPEN_PAR
-			if(!operatorStack.empty())
-				operatorStack.pop_back();
+
 
 			//Push the read operator onto the operator stack
 			operatorStack.push_back(tokenToText[*tok]);
@@ -480,3 +491,4 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 
 	return true;
 }
+
