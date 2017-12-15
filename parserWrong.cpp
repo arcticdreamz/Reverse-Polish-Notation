@@ -6,6 +6,7 @@
 #include <stdexcept> //domain_error
 #include <cctype> //isspace
 
+using std::string;
 using std::endl;
 using std::cout;
 using std::vector;
@@ -17,16 +18,14 @@ Lexer::Lexer(std::istream& inputStream) : in(inputStream),counter(0){}
 
 Lexer::token Lexer::next() {
 	in.seekg(count()); //Go to the current position
-	const std::string s = extractString();
-	while(count() < in.tellg())
-		counter++;
-
+	string s = extractString();
+	counter = in.tellg();
 	return identifyToken(s);
 }
 
 Lexer::token Lexer::peek(){
 	in.seekg(count()); //Go to the current position
-	const std::string s = extractString();
+	string s = extractString();
 	in.seekg(count()); //Go back to where we were before extracting the string
 	in.clear(); //Clears the eofbit if lexer.peek() reached eof
 
@@ -42,7 +41,7 @@ void Lexer::reset(){
 }
 
 
-Lexer::token Lexer::identifyToken(const std::string s) {
+Lexer::token Lexer::identifyToken(const string s) {
 	if(s == "x")
 		return Lexer::X;
 
@@ -75,38 +74,37 @@ Lexer::token Lexer::identifyToken(const std::string s) {
 }
 
 std::string Lexer::extractString(){
-	const std::string sensitive_chars = "sincospiavg";
-	const std::string single_char = "xy()*,";
+	const string sensitive_chars = "sincospiavg";
+	const string single_char = "xy()*,";
 	char c;
-	std::string s = "";
+	string s = "";
 
+	//in>>std::ws;
 
 	c = in.get();
 	//check for EOF
 	if(c == std::char_traits<char>::eof())
 		throw std::domain_error("EOI");
 	
-	//Ignore whitespace
 	while(isspace(c)) {
  		c = in.get();
  		if(c == std::char_traits<char>::eof())
   			throw std::domain_error("EOI");
   	}
-	//Add c to string
-	s.push_back(c);
 
+	s.push_back(c);
 	//Check if "xy()*,"
-	if(single_char.find(c) != std::string::npos)
+	if(single_char.find(c) != string::npos)
 		return s;
 	
 
 	//Check if "sin", "cos", "pi" or "avg"
-	else if(sensitive_chars.find(c) != std::string::npos){
+	else if(sensitive_chars.find(c) != string::npos){
 		while(true) {
 			c = in.get();
 			if(c == std::char_traits<char>::eof()) //Check for end of file
 				break;
-			else if(sensitive_chars.find(c) != std::string::npos)
+			else if(sensitive_chars.find(c) != string::npos)
                 s.push_back(c);
 			else {
 				in.unget();// We read a character that's not sensitive
@@ -117,7 +115,7 @@ std::string Lexer::extractString(){
 		if(s == "sin" || s == "cos" || s == "avg" || s == "pi")
 			return s; 
 		else if(c == std::char_traits<char>::eof())
-			throw std::domain_error("BAD TOKEN: " + s);	
+			throw std::domain_error("BAD TOKEN: " + s);	//throw std::domain_error("EOI");
 		else
 			throw std::domain_error("BAD TOKEN: " + s);
 	}
@@ -133,15 +131,26 @@ Parser::Parser(std::istream& inputStream): lexer(inputStream){}
 
 
 bool Parser::parse(Exp& exp){
-	if(!checkSyntax())
-		return false;
-				
+
+	exp.clear();
+	//Phase 1 - SYNTAX
+	
+	try{
+		while(1 + lexer.peek()){ //We run until we throw EOI
+			if(!checkSyntax())
+				return false;
+		}
+	}catch(std::domain_error& e){}
+
+
+	//return checkSyntax();
+		
 	//Phase 2 -- INFIX TO RPN
 	return infixToRPN(exp,tokenVector);
 }
 
 
-bool Parser::checkSyntax() {
+bool Parser::checkSyntax() { //Will never throw because I do peek() in the calling function
 
 	if(lexer.peek() == Lexer::SIN || lexer.peek() == Lexer::COS){
 		if(!checkSinCos())
@@ -162,7 +171,7 @@ bool Parser::checkSyntax() {
 			return false;	
 	}else{
 		return false;
-	}		
+	}
 
 	return true;
 } //end of checkSyntax
@@ -173,21 +182,20 @@ bool Parser::checkXY(){
 
 	//After X or Y , there can only be "*)," or EOF
 	try{	
-		if(tokenVector.size() == 1){ //We have X or Y alone
+		if(lexer.count() == 1) //We have X or Y alone
 			lexer.peek(); //If this doesn't throw, we are not EOI so there is a TOKEN AFTER X/Y
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-		}
-
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}catch(std::domain_error& e){
-	std::string error(e.what());
-	if(error !="EOI") //ELSE, that means that the expression is correct
-		throw;
-	else if(tokenVector.size() != 1) //Throw parse error if X/Y is not by itself
-		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-	
+		std::string error(e.what());
+		if(error !="EOI") //ELSE, that means that the expression is correct
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		else if(lexer.count() != 1){ //Throw parse error if X/Y is not by itself
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		}
 	}
+
 	return true;
 }
 
@@ -217,10 +225,10 @@ bool Parser::checkSinCos(){
 
 	  	tokenVector.push_back(lexer.next()); //Take token
 
+
 	  	//Checking expr1
 		if(!checkSyntax())
-			return false;
-			
+			return false;	
 		
 		//If not found
 		if(lexer.peek() != Lexer::CLOSE_PAR)
@@ -248,12 +256,16 @@ bool Parser::checkSinCos(){
   		//After the closing parenthesis of SIN/COS, there can only be "*,)"
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
-
+	
+		//If there is a TIMES but there is no open parentheses in that block
+		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		
 
 	}catch(std::domain_error& e){
 		std::string error(e.what());
 		if(error !="EOI") //ELSE, that means that the expression is correct
-			throw;
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}
 
 	return true;
@@ -273,11 +285,9 @@ bool Parser::checkAverage(){
 	  	//Remember the position of the OPEN_PAR
 	  	openParLocations.push_back(lexer.count());
 
-		//checking expr1
-
+		//Searching the COMMA, checking expr1
 		if(!checkSyntax())
 			return false;
-		
 
 		//Check COMMA
 	  	if(lexer.peek() != Lexer::COMMA)
@@ -287,7 +297,8 @@ bool Parser::checkAverage(){
 
 		//Check expr2
 		if(!checkSyntax())
-				return false;
+			return false;
+	
 
 		// checks if AVG ends with CLOSE_PAR
 		if(lexer.peek() != Lexer::CLOSE_PAR)
@@ -319,13 +330,15 @@ bool Parser::checkAverage(){
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));	
 
-	
+		//If there is a TIMES but there is no open parentheses in that block
+		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 		
 	}catch(std::domain_error& e){		
 		std::string error(e.what());
 		if(error !="EOI") //ELSE, that means that the expression is correct
-			throw;
-		}
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+	}
 
 
 	return true;
@@ -339,9 +352,10 @@ bool Parser::checkProduct(){
   	openParLocations.push_back(lexer.count());
 
   	try{
-		//checking exp1
+
+		//Checking expr1
 		if(!checkSyntax())
-			return false;
+				return false;
 		
 	  	//Check TIMES
 	  	if(lexer.peek() != Lexer::TIMES)
@@ -349,11 +363,12 @@ bool Parser::checkProduct(){
 		
 		tokenVector.push_back(lexer.next()); //Take the TIMES
 
-		// checks exp2
+
+		//Check expr2
 		if(!checkSyntax())
 			return false;
-		
-		//if not found
+
+		//If it doesn't end with CLOSE_PAR
 		if(lexer.peek() != Lexer::CLOSE_PAR)
 	  		throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 
@@ -381,10 +396,15 @@ bool Parser::checkProduct(){
 		if(lexer.peek() != Lexer::CLOSE_PAR && lexer.peek() != Lexer::TIMES && lexer.peek() != Lexer::COMMA)
 			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 
+		//If there is a TIMES but there is no open parentheses in that block
+		if(lexer.peek() == Lexer::TIMES && openParLocations.empty())
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
+		
+
 	}catch(std::domain_error& e){
 		std::string error(e.what());
 		if(error !="EOI")
-			throw;
+			throw std::domain_error("PARSE ERROR at " + std::to_string(lexer.count()));
 	}
 
 	return true;
@@ -392,12 +412,10 @@ bool Parser::checkProduct(){
 
 
 
-bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
+bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector){
 
  	Exp operatorStack;
  	
- 	exp.clear();
-
  	//Variables to keep track of the parentheses for AVG
  	int parentheses = 0;
  	std::vector<int> avgPar;
@@ -430,7 +448,7 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 			parentheses--;
 
 			//Pop the operators onto the queue as long as
-			//we don't encounter an OPEN_PAR
+			//we don't encounter a OPEN_PAR
 			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
 				exp.push_back(operatorStack.back());
 				operatorStack.pop_back();
@@ -443,20 +461,15 @@ bool Parser::infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector){
 			//If parentheses is the same as one of avgPar, we must add "+2/"
 			//(Same method as if the one for the other operators)
 			if(std::find(avgPar.begin(), avgPar.end(), parentheses) != avgPar.end()){
-<<<<<<< HEAD
+
 				exp.push_back("+ 2 /");
-=======
-				exp.push_back("+");
-				exp.push_back("2");
-				exp.push_back("/");
->>>>>>> f96b75aed0b2483796e6d83cc01879c0c605e97c
 			}
 			
 
-		//For operators (SIN,COS,TIMES)
+		//For operators
 		}else{
 			//We pop the other operators from the stack until empty or until
-			//we encounter OPEN_PAR 
+			//we encounter OPEN_PAR or "+" (because smaller precedence)
 			while(!operatorStack.empty() && operatorStack.back() != tokenToText[Lexer::OPEN_PAR]){
 				exp.push_back(operatorStack.back());
 				operatorStack.pop_back();

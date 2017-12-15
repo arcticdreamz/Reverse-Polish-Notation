@@ -10,7 +10,6 @@
 
 class Lexer {	
 	friend class Parser;
-
 	public:
 	enum token {X, Y, SIN, COS, PI, OPEN_PAR, CLOSE_PAR, TIMES, AVG, COMMA};
 	explicit Lexer(std::istream& in);
@@ -23,7 +22,6 @@ class Lexer {
 	private:
 	std::istream& in;
 	std::streamoff counter;
-
 	token identifyToken(const std::string s);
 	std::string extractString();
 };
@@ -49,7 +47,7 @@ class Parser {
  	bool checkProduct();
  	bool checkSinCos();
  	bool checkXY();
- 	bool infixToRPN(Exp& exp,std::vector<Lexer::token> tokenVector); 
+ 	bool infixToRPN(Exp& exp,std::vector<Lexer::token>& tokenVector); 
 
 };
 
