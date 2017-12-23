@@ -1,0 +1,32 @@
+Sat Dec  9 20:43:15 UTC 2017
+Untaring InfixToRPN_CRASSET.tar.gz... Success !
+Now executing gcc... Crossing fingers !
+parser_d.cpp:32:2: warning: "/*" within comment [-Wcomment]
+  /* std::string tokenToText[10] = {"X", "Y", "SIN", "COS", "PI", "OPEN_PAR", "CLOSE_PAR", "TIMES", "AVG", "COMMA"};
+  ^
+parser_d.cpp: In member function 'Lexer::token Lexer::peek()':
+parser_d.cpp:80:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+parser_d.cpp: In member function 'Lexer::token Lexer::identifyToken(std::__cxx11::string)':
+parser_d.cpp:121:1: warning: control reaches end of non-void function [-Wreturn-type]
+ }
+ ^
+Compilation successful ! You won't get 0 !
+Yihaaa. Now let's start the tests... 
+
+---
+
+Test 0 : running the program, without doing anything... OK !
+---
+
+Test 1 : simple (x * y)... Unexpected error ! (Segfault?) !
+Test 2 : Lexical error (x + y)... /vagrant/c6VfUOt4nJERct/script1.sh: line 9:  1426 Aborted                 (core dumped) ./parser $2 $3 $4 $5 $6 $7 &>> private.txt
+OK!
+Test 3 : Parser error... OK!
+Test 4 : More complex... /vagrant/c6VfUOt4nJERct/script1.sh: line 9:  1429 Aborted                 (core dumped) ./parser $2 $3 $4 $5 $6 $7 &>> private.txt
+Unexpected error ! (Segfault?) !
+Test 5 : More complex with on purpose error... Unexpected error ! (Segfault?) !
+Test 6 : Very complex... /vagrant/c6VfUOt4nJERct/script1.sh: line 26:  1430 Aborted                 (core dumped) ./parser &>> private.txt
+Unexpected error ! (Segfault?) !
+/vagrant/c6VfUOt4nJERct/script1.sh: line 9:  1431 Aborted                 (core dumped) ./parser $2 $3 $4 $5 $6 $7 &>> private.txt

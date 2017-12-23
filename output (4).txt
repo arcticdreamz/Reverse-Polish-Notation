@@ -1,0 +1,18 @@
+Mon Dec 11 21:21:36 UTC 2017
+Untaring InfixToRPN_CRASSET.tar.gz... Success !
+Now executing gcc... Crossing fingers !
+Compilation successful ! You won't get 0 !
+Yihaaa. Now let's start the tests... 
+
+---
+
+Test 0 : running the program, without doing anything... OK !
+---
+
+Test 1 : simple (x * y)... OK!
+Test 2 : Lexical error (x + y)... OK!
+Test 3 : Parser error... OK!
+Test 4 : More complex... OK!
+Test 5 : More complex with on purpose error... OK!
+Test 6 : Very complex... Unexpected error ! (Segfault?) !
+/vagrant/vVrQZXc2IjCqEohG24/script1.sh: line 9:  1432 Aborted                 (core dumped) ./parser $2 $3 $4 $5 $6 $7 &>> private.txt
